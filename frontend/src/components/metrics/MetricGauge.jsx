@@ -51,7 +51,7 @@ export default function MetricGauge({ value, label, subtitle, invertedScale = tr
         <text
           x={size / 2} y={size / 2 - 6}
           textAnchor="middle" dominantBaseline="middle"
-          fill={isNA ? '#4a6d8a' : color}
+          fill={isNA ? 'var(--text-muted)' : color}
           fontFamily="'Space Mono', monospace"
           fontWeight="700"
           fontSize={size < 100 ? 14 : 18}
@@ -61,7 +61,7 @@ export default function MetricGauge({ value, label, subtitle, invertedScale = tr
         <text
           x={size / 2} y={size / 2 + 14}
           textAnchor="middle"
-          fill="#4a6d8a"
+          fill="var(--text-muted)"
           fontFamily="'JetBrains Mono', monospace"
           fontSize={9}
           letterSpacing="0.08em"
@@ -74,14 +74,14 @@ export default function MetricGauge({ value, label, subtitle, invertedScale = tr
         <p style={{
           fontFamily: "'Space Mono', monospace",
           fontSize: '0.72rem',
-          color: '#e8f4fd',
+          color: 'var(--text-primary)',
           letterSpacing: '0.04em',
           marginBottom: 2,
         }}>
           {label}
         </p>
         {subtitle && (
-          <p style={{ fontSize: '0.65rem', color: '#4a6d8a', fontFamily: "'DM Sans', sans-serif" }}>
+          <p style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontFamily: "'DM Sans', sans-serif" }}>
             {subtitle}
           </p>
         )}

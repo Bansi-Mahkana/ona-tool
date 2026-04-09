@@ -56,11 +56,11 @@ export default function GraphControls({
             onClick={action}
             style={{
               background: 'transparent', border: 'none', cursor: 'pointer',
-              color: '#8bacc5', padding: '5px 7px', borderRadius: 5, lineHeight: 0,
+              color: 'var(--text-secondary)', padding: '5px 7px', borderRadius: 5, lineHeight: 0,
               transition: 'all 0.15s',
             }}
             onMouseEnter={e => e.currentTarget.style.color = '#4fc3f7'}
-            onMouseLeave={e => e.currentTarget.style.color = '#8bacc5'}
+            onMouseLeave={e => e.currentTarget.style.color = 'var(--text-secondary)'}
           >
             <Icon size={14} />
           </button>
@@ -76,7 +76,7 @@ export default function GraphControls({
             background: filterOpen ? 'rgba(79,195,247,0.12)' : 'rgba(8,22,42,0.9)',
             border: `1px solid ${filterOpen ? 'rgba(79,195,247,0.4)' : 'rgba(79,195,247,0.15)'}`,
             borderRadius: 8, padding: '6px 10px', cursor: 'pointer',
-            color: filterOpen ? '#4fc3f7' : '#8bacc5',
+            color: filterOpen ? '#4fc3f7' : 'var(--text-secondary)',
             fontFamily: "'Space Mono', monospace", fontSize: '0.62rem',
             backdropFilter: 'blur(8px)', transition: 'all 0.15s',
           }}
@@ -92,7 +92,7 @@ export default function GraphControls({
             backdropFilter: 'blur(12px)', boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
           }}>
             {/* Edge signs */}
-            <p style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.58rem', color: '#4a6d8a', letterSpacing: '0.1em', marginBottom: 8 }}>
+            <p style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.58rem', color: 'var(--text-muted)', letterSpacing: '0.1em', marginBottom: 8 }}>
               EDGE SIGNS
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginBottom: 12 }}>
@@ -105,7 +105,7 @@ export default function GraphControls({
                     background: active ? `${color}10` : 'transparent',
                     border: `1px solid ${active ? `${color}30` : 'transparent'}`,
                     borderRadius: 5, padding: '5px 8px', cursor: 'pointer',
-                    color: active ? color : '#4a6d8a',
+                    color: active ? color : 'var(--text-muted)',
                     fontFamily: "'JetBrains Mono', monospace", fontSize: '0.68rem',
                     transition: 'all 0.15s', textAlign: 'left', width: '100%',
                   }}
@@ -119,7 +119,7 @@ export default function GraphControls({
             {/* Departments */}
             {departments.length > 0 && (
               <>
-                <p style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.58rem', color: '#4a6d8a', letterSpacing: '0.1em', marginBottom: 8 }}>
+                <p style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.58rem', color: 'var(--text-muted)', letterSpacing: '0.1em', marginBottom: 8 }}>
                   DEPARTMENTS
                 </p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
@@ -135,7 +135,7 @@ export default function GraphControls({
                           background: active ? `${color}10` : 'transparent',
                           border: `1px solid ${active ? `${color}25` : 'transparent'}`,
                           borderRadius: 5, padding: '5px 8px', cursor: 'pointer',
-                          color: active ? color : '#4a6d8a',
+                          color: active ? color : 'var(--text-muted)',
                           fontFamily: "'DM Sans', sans-serif", fontSize: '0.72rem',
                           transition: 'all 0.15s', textAlign: 'left', width: '100%',
                         }}

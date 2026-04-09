@@ -25,7 +25,7 @@ export function exportGraphAsPNG(containerEl, filename = 'ona-network.png') {
     canvas.height = svgEl.height.baseVal.value * scale || 600
 
     const ctx = canvas.getContext('2d')
-    ctx.fillStyle = '#06111f'
+    ctx.fillStyle = 'var(--bg-primary)'
     ctx.fillRect(0, 0, canvas.width, canvas.height)
     ctx.scale(scale, scale)
     ctx.drawImage(img, 0, 0)

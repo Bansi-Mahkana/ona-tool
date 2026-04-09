@@ -102,7 +102,7 @@ export function computeSignedBalance(links) {
  * Get colour for a 0-1 metric value (lower=better for frustration/cost).
  */
 export function metricColor(value, invertedScale = true) {
-  if (value === null || value === undefined) return '#4a6d8a'
+  if (value === null || value === undefined) return 'var(--text-muted)'
   if (invertedScale) {
     if (value <= 0.3) return '#00d4a0'   // green = good
     if (value <= 0.6) return '#f5a623'   // amber = warning

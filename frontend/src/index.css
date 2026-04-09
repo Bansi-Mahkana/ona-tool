@@ -21,6 +21,24 @@
     --glow-blue: 0 0 20px rgba(79, 195, 247, 0.3);
   }
 
+  [data-theme="light"] {
+    --bg-primary: #f0f7ff;
+    --bg-secondary: #e1eef9;
+    --bg-card: #ffffff;
+    --bg-card-hover: #f5faff;
+    --border: rgba(79, 195, 247, 0.25);
+    --border-active: rgba(0, 180, 130, 0.5);
+    --text-primary: #0a2540;
+    --text-secondary: #2d5a7a;
+    --text-muted: #7a9bb5;
+    --accent-green: #00b386;
+    --accent-amber: #e08c00;
+    --accent-red: #e03040;
+    --accent-blue: #0288d1;
+    --glow-green: 0 0 20px rgba(0, 180, 130, 0.2);
+    --glow-blue: 0 0 20px rgba(2, 136, 209, 0.2);
+  }
+
   * {
     box-sizing: border-box;
   }

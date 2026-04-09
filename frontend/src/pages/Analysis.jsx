@@ -97,8 +97,8 @@ export default function Analysis() {
           background: 'var(--bg-secondary)', flexShrink: 0,
         }}>
           <div style={{ marginRight: 8 }}>
-            <p style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.62rem', color: '#4a6d8a', letterSpacing: '0.1em' }}>ANALYSIS</p>
-            <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '0.82rem', color: '#e8f4fd' }}>
+            <p style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.62rem', color: 'var(--text-muted)', letterSpacing: '0.1em' }}>ANALYSIS</p>
+            <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '0.82rem', color: 'var(--text-primary)' }}>
               {fileName || 'Network Dataset'}
             </p>
           </div>
@@ -110,7 +110,7 @@ export default function Analysis() {
                 display: 'flex', alignItems: 'center', gap: 5,
                 padding: '5px 12px', borderRadius: 6, border: 'none', cursor: 'pointer',
                 background: activeTab === tab.id ? 'rgba(79,195,247,0.12)' : 'transparent',
-                color: activeTab === tab.id ? '#4fc3f7' : '#4a6d8a',
+                color: activeTab === tab.id ? '#4fc3f7' : 'var(--text-muted)',
                 fontFamily: "'Space Mono', monospace", fontSize: '0.6rem', letterSpacing: '0.06em',
                 transition: 'all 0.15s',
               }}>
@@ -143,7 +143,7 @@ export default function Analysis() {
             <button className="btn-primary" style={{ padding: '6px 16px', fontSize: '0.7rem', display: 'flex', alignItems: 'center', gap: 5 }} onClick={() => navigate('/recommendations')}>
               Recommendations <ChevronRight size={12} />
             </button>
-            <button onClick={toggleSidebar} style={{ background: 'transparent', border: '1px solid var(--border)', borderRadius: 6, color: sidebarOpen ? '#4fc3f7' : '#4a6d8a', cursor: 'pointer', padding: '5px 7px' }}>
+            <button onClick={toggleSidebar} style={{ background: 'transparent', border: '1px solid var(--border)', borderRadius: 6, color: sidebarOpen ? '#4fc3f7' : 'var(--text-muted)', cursor: 'pointer', padding: '5px 7px' }}>
               <PanelRight size={13} />
             </button>
           </div>
@@ -176,7 +176,7 @@ export default function Analysis() {
             ].map((s) => (
               <div key={s.l} style={{ textAlign: 'center' }}>
                 <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '1rem', color: '#4fc3f7', fontWeight: 700 }}>{s.v ?? '—'}</div>
-                <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.58rem', color: '#4a6d8a', letterSpacing: '0.1em' }}>{s.l}</div>
+                <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.58rem', color: 'var(--text-muted)', letterSpacing: '0.1em' }}>{s.l}</div>
               </div>
             ))}
           </div>
@@ -190,7 +190,7 @@ export default function Analysis() {
             <div className="card" style={{ overflow: 'hidden' }}>
               <div style={{ padding: '9px 14px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: 8 }}>
                 <Network size={12} style={{ color: '#4fc3f7' }} />
-                <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.62rem', color: '#4a6d8a', letterSpacing: '0.08em' }}>
+                <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.62rem', color: 'var(--text-muted)', letterSpacing: '0.08em' }}>
                   FORCE-DIRECTED GRAPH · drag nodes · scroll to zoom · use filter panel (bottom-left)
                 </span>
               </div>
@@ -207,7 +207,7 @@ export default function Analysis() {
           {activeTab === 'hierarchy' && (
             <div className="card" style={{ overflow: 'hidden' }}>
               <div style={{ padding: '9px 14px', borderBottom: '1px solid var(--border)' }}>
-                <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.62rem', color: '#4a6d8a', letterSpacing: '0.08em' }}>
+                <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.62rem', color: 'var(--text-muted)', letterSpacing: '0.08em' }}>
                   ORG HIERARCHY · grouped by department · scroll to zoom
                 </span>
               </div>
@@ -236,7 +236,7 @@ export default function Analysis() {
                         style={{
                           padding: '5px 14px', borderRadius: 6, border: 'none', cursor: 'pointer',
                           background: centralityMetric === opt.id ? 'rgba(79,195,247,0.12)' : 'transparent',
-                          color: centralityMetric === opt.id ? '#4fc3f7' : '#4a6d8a',
+                          color: centralityMetric === opt.id ? '#4fc3f7' : 'var(--text-muted)',
                           fontFamily: "'Space Mono', monospace", fontSize: '0.62rem', letterSpacing: '0.06em',
                           transition: 'all 0.15s',
                         }}
@@ -262,8 +262,8 @@ export default function Analysis() {
                   ].map((s) => (
                     <div key={s.label} style={{ textAlign: 'center', padding: '14px', borderRadius: 10, background: `${s.color}07`, border: `1px solid ${s.color}18` }}>
                       <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '1.8rem', color: s.color, fontWeight: 700 }}>{s.value}</div>
-                      <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.65rem', color: '#8bacc5', marginTop: 2 }}>{s.label}</div>
-                      <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '0.68rem', color: '#4a6d8a', marginTop: 4 }}>{s.desc}</div>
+                      <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.65rem', color: 'var(--text-secondary)', marginTop: 2 }}>{s.label}</div>
+                      <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: 4 }}>{s.desc}</div>
                     </div>
                   ))}
                 </div>
@@ -294,7 +294,7 @@ export default function Analysis() {
                       previousValue={prev}
                     />
                     {interp && (
-                      <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '0.7rem', color: '#8bacc5', lineHeight: 1.6, textAlign: 'center' }}>
+                      <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '0.7rem', color: 'var(--text-secondary)', lineHeight: 1.6, textAlign: 'center' }}>
                         {interp}
                       </p>
                     )}
@@ -324,7 +324,7 @@ export default function Analysis() {
                   ].map((s) => (
                     <div key={s.label} style={{ background: 'rgba(13,31,51,0.8)', border: '1px solid rgba(79,195,247,0.08)', borderRadius: 8, padding: '10px 12px' }}>
                       <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.95rem', color: '#4fc3f7', fontWeight: 700 }}>{s.value ?? '—'}</div>
-                      <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '0.68rem', color: '#4a6d8a', marginTop: 2 }}>{s.label}</div>
+                      <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: 2 }}>{s.label}</div>
                     </div>
                   ))}
                 </div>
@@ -345,12 +345,12 @@ export default function Analysis() {
                       {selectedNode.id.slice(0,2).toUpperCase()}
                     </div>
                     <div>
-                      <h3 style={{ fontFamily: "'Space Mono', monospace", fontSize: '1rem', color: '#e8f4fd', margin: 0 }}>{selectedNode.id}</h3>
+                      <h3 style={{ fontFamily: "'Space Mono', monospace", fontSize: '1rem', color: 'var(--text-primary)', margin: 0 }}>{selectedNode.id}</h3>
                       <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '0.78rem', color: deptColorMap[selectedNode.department], margin: 0 }}>{selectedNode.department}</p>
                     </div>
                   </div>
                 </div>
-                <button onClick={() => setSelectedNode(null)} style={{ background: 'transparent', border: 'none', color: '#4a6d8a', cursor: 'pointer', padding: 4 }}>
+                <button onClick={() => setSelectedNode(null)} style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: 4 }}>
                   <X size={14} />
                 </button>
               </div>
@@ -358,15 +358,15 @@ export default function Analysis() {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
                 {/* Stats */}
                 <div>
-                  <p style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.58rem', color: '#4a6d8a', letterSpacing: '0.08em', marginBottom: 8 }}>CONNECTIONS</p>
+                  <p style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.58rem', color: 'var(--text-muted)', letterSpacing: '0.08em', marginBottom: 8 }}>CONNECTIONS</p>
                   <div style={{ display: 'flex', gap: 10 }}>
                     {[
                       { label: 'Outgoing', value: nodeConnections.outgoing.length, color: '#4fc3f7' },
                       { label: 'Incoming', value: nodeConnections.incoming.length, color: '#00d4a0' },
                     ].map((s) => (
-                      <div key={s.label} style={{ textAlign: 'center', flex: 1, background: 'rgba(13,31,51,0.6)', border: '1px solid rgba(79,195,247,0.1)', borderRadius: 6, padding: '8px 4px' }}>
+                      <div key={s.label} style={{ textAlign: 'center', flex: 1, background: 'var(--bg-secondary)', border: '1px solid rgba(79,195,247,0.1)', borderRadius: 6, padding: '8px 4px' }}>
                         <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '1.2rem', color: s.color, fontWeight: 700 }}>{s.value}</div>
-                        <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '0.65rem', color: '#4a6d8a' }}>{s.label}</div>
+                        <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '0.65rem', color: 'var(--text-muted)' }}>{s.label}</div>
                       </div>
                     ))}
                   </div>
@@ -374,13 +374,13 @@ export default function Analysis() {
 
                 {/* Outgoing */}
                 <div>
-                  <p style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.58rem', color: '#4a6d8a', letterSpacing: '0.08em', marginBottom: 8 }}>OUTGOING TIES</p>
+                  <p style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.58rem', color: 'var(--text-muted)', letterSpacing: '0.08em', marginBottom: 8 }}>OUTGOING TIES</p>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 3, maxHeight: 80, overflowY: 'auto' }}>
                     {nodeConnections.outgoing.slice(0, 6).map((c) => (
                       <div key={c.node} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                         <span style={{ width: 6, height: 6, borderRadius: '50%', background: c.sign===1?'#00d4a0':c.sign===-1?'#ff4757':'#4fc3f7', flexShrink: 0 }} />
-                        <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '0.72rem', color: '#8bacc5' }}>{c.node}</span>
-                        <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.6rem', color: '#4a6d8a', marginLeft: 'auto' }}>w:{c.weight??1}</span>
+                        <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '0.72rem', color: 'var(--text-secondary)' }}>{c.node}</span>
+                        <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.6rem', color: 'var(--text-muted)', marginLeft: 'auto' }}>w:{c.weight??1}</span>
                       </div>
                     ))}
                   </div>
@@ -388,7 +388,7 @@ export default function Analysis() {
 
                 {/* Move department */}
                 <div>
-                  <p style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.58rem', color: '#4a6d8a', letterSpacing: '0.08em', marginBottom: 8 }}>
+                  <p style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.58rem', color: 'var(--text-muted)', letterSpacing: '0.08em', marginBottom: 8 }}>
                     MOVE TO DEPT
                   </p>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
@@ -415,17 +415,17 @@ export default function Analysis() {
                 <p style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.6rem', color: '#4fc3f7', letterSpacing: '0.1em' }}>
                   SELECTED EDGE
                 </p>
-                <button onClick={() => setSelectedEdge(null)} style={{ background: 'transparent', border: 'none', color: '#4a6d8a', cursor: 'pointer' }}>
+                <button onClick={() => setSelectedEdge(null)} style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}>
                   <X size={13} />
                 </button>
               </div>
               <div style={{ display: 'flex', gap: 24, alignItems: 'center' }}>
                 <div>
-                  <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.9rem', color: '#e8f4fd' }}>
+                  <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.9rem', color: 'var(--text-primary)' }}>
                     {typeof selectedEdge.source === 'object' ? selectedEdge.source.id : selectedEdge.source}
                   </span>
-                  <span style={{ color: '#4a6d8a', margin: '0 8px' }}>→</span>
-                  <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.9rem', color: '#e8f4fd' }}>
+                  <span style={{ color: 'var(--text-muted)', margin: '0 8px' }}>→</span>
+                  <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.9rem', color: 'var(--text-primary)' }}>
                     {typeof selectedEdge.target === 'object' ? selectedEdge.target.id : selectedEdge.target}
                   </span>
                 </div>
@@ -435,7 +435,7 @@ export default function Analysis() {
                     { label: 'Sign', value: selectedEdge.sign === 1 ? '+ Positive' : selectedEdge.sign === -1 ? '− Negative' : '● Neutral', color: selectedEdge.sign===1?'#00d4a0':selectedEdge.sign===-1?'#ff4757':'#4fc3f7' },
                   ].map((s) => (
                     <div key={s.label}>
-                      <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.6rem', color: '#4a6d8a', marginBottom: 2 }}>{s.label}</div>
+                      <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.6rem', color: 'var(--text-muted)', marginBottom: 2 }}>{s.label}</div>
                       <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.82rem', color: s.color }}>{s.value}</div>
                     </div>
                   ))}
@@ -444,8 +444,8 @@ export default function Analysis() {
                       const val = [selectedEdge.q1,selectedEdge.q2,selectedEdge.q3,selectedEdge.q4][i]
                       return val != null ? (
                         <div key={q}>
-                          <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.6rem', color: '#4a6d8a', marginBottom: 2 }}>{q}</div>
-                          <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.82rem', color: '#8bacc5' }}>{val}</div>
+                          <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.6rem', color: 'var(--text-muted)', marginBottom: 2 }}>{q}</div>
+                          <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.82rem', color: 'var(--text-secondary)' }}>{val}</div>
                         </div>
                       ) : null
                     })
@@ -463,7 +463,7 @@ export default function Analysis() {
           width: 290, flexShrink: 0, overflow: 'auto',
           borderLeft: '1px solid var(--border)', background: 'var(--bg-secondary)', padding: 14,
         }}>
-          <p style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.6rem', color: '#4a6d8a', letterSpacing: '0.12em', marginBottom: 14 }}>
+          <p style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.6rem', color: 'var(--text-muted)', letterSpacing: '0.12em', marginBottom: 14 }}>
             INTERPRETATION & ACTIONS
           </p>
           <RecommendationPanel compact={false} />

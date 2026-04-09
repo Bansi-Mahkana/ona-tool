@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from 'react-router-dom'
-import { Network, Upload, BarChart2, Lightbulb, RotateCcw } from 'lucide-react'
+import { Network, Upload, BarChart2, Lightbulb, RotateCcw, Moon, Sun } from 'lucide-react'
 import useNetworkStore from '../../store/networkStore'
 
 const NAV_ITEMS = [
@@ -12,13 +12,13 @@ const NAV_ITEMS = [
 export default function Navbar() {
   const navigate = useNavigate()
   const location = useLocation()
-  const { graphData, reset } = useNetworkStore()
+  const { graphData, reset, theme, toggleTheme } = useNetworkStore()
 
   return (
     <nav style={{
       display: 'flex', alignItems: 'center',
       padding: '0 24px', height: 52,
-      background: 'rgba(8,22,42,0.95)',
+      background: 'var(--bg-primary)',
       borderBottom: '1px solid rgba(79,195,247,0.1)',
       backdropFilter: 'blur(12px)',
       position: 'sticky', top: 0, zIndex: 100,
@@ -34,11 +34,11 @@ export default function Navbar() {
           background: 'linear-gradient(135deg, #4fc3f7, #00d4a0)',
           borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center',
         }}>
-          <Network size={14} color="#06111f" />
+          <Network size={14} color="var(--bg-primary)" />
         </div>
         <span style={{
           fontFamily: "'Space Mono', monospace", fontWeight: 700,
-          fontSize: '0.78rem', color: '#e8f4fd', letterSpacing: '0.05em',
+          fontSize: '0.78rem', color: 'var(--text-primary)', letterSpacing: '0.05em',
         }}>
           ONA<span style={{ color: '#4fc3f7' }}>·</span>TOOL
         </span>
@@ -57,7 +57,7 @@ export default function Navbar() {
                 display: 'flex', alignItems: 'center', gap: 6,
                 padding: '6px 14px', borderRadius: 6, border: 'none', cursor: locked ? 'not-allowed' : 'pointer',
                 background: active ? 'rgba(79,195,247,0.1)' : 'transparent',
-                color: active ? '#4fc3f7' : locked ? '#2a4a65' : '#8bacc5',
+                color: active ? '#4fc3f7' : locked ? '#2a4a65' : 'var(--text-secondary)',
                 fontFamily: "'Space Mono', monospace", fontSize: '0.62rem', letterSpacing: '0.1em',
                 transition: 'all 0.15s',
                 opacity: locked ? 0.5 : 1,
@@ -77,6 +77,18 @@ export default function Navbar() {
 
       {/* Right side */}
       <div style={{ marginLeft: 'auto', display: 'flex', gap: 8, alignItems: 'center' }}>
+        <button
+          onClick={toggleTheme}
+          style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            width: 28, height: 28, borderRadius: 6, border: 'none', cursor: 'pointer',
+            background: 'transparent', color: 'var(--text-secondary)',
+            transition: 'all 0.15s',
+          }}
+          title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+        >
+          {theme === 'dark' ? <Sun size={14} /> : <Moon size={14} />}
+        </button>
         {graphData && (
           <div style={{
             display: 'flex', alignItems: 'center', gap: 6,

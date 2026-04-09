@@ -129,13 +129,13 @@ export default function UploadPage() {
 
         {/* Header */}
         <div className="mb-10 animate-fade-up">
-          <p className="font-code text-xs mb-2" style={{ color: '#4a6d8a', letterSpacing: '0.12em' }}>
+          <p className="font-code text-xs mb-2" style={{ color: 'var(--text-muted)', letterSpacing: '0.12em' }}>
             STEP 01 / IMPORT DATA
           </p>
-          <h1 className="font-display" style={{ fontSize: '2rem', color: '#e8f4fd', marginBottom: 8 }}>
+          <h1 className="font-display" style={{ fontSize: '2rem', color: 'var(--text-primary)', marginBottom: 8 }}>
             Upload Your Dataset
           </h1>
-          <p className="font-body" style={{ color: '#8bacc5' }}>
+          <p className="font-body" style={{ color: 'var(--text-secondary)' }}>
             Import a CSV edge list. Optionally include Cross-Parker survey columns (q1–q4) for signed network analysis.
           </p>
         </div>
@@ -162,7 +162,7 @@ export default function UploadPage() {
                   <p className="font-display text-sm" style={{ color: '#00d4a0', marginBottom: 4 }}>
                     Dataset Loaded
                   </p>
-                  <p className="font-code text-xs" style={{ color: '#8bacc5' }}>
+                  <p className="font-code text-xs" style={{ color: 'var(--text-secondary)' }}>
                     {preview?.fileName}
                   </p>
                 </div>
@@ -173,15 +173,15 @@ export default function UploadPage() {
                     borderTop: '3px solid #4fc3f7', borderRadius: '50%',
                     margin: '0 auto 16px', animation: 'spin 1s linear infinite',
                   }} />
-                  <p className="font-code text-xs" style={{ color: '#8bacc5' }}>Parsing dataset...</p>
+                  <p className="font-code text-xs" style={{ color: 'var(--text-secondary)' }}>Parsing dataset...</p>
                 </div>
               ) : (
                 <div>
-                  <Upload size={48} style={{ color: '#4a6d8a', margin: '0 auto 16px' }} />
-                  <p className="font-display text-sm" style={{ color: '#e8f4fd', marginBottom: 8 }}>
+                  <Upload size={48} style={{ color: 'var(--text-muted)', margin: '0 auto 16px' }} />
+                  <p className="font-display text-sm" style={{ color: 'var(--text-primary)', marginBottom: 8 }}>
                     {isDragActive ? 'Drop your CSV here' : 'Drag & drop your CSV file'}
                   </p>
-                  <p className="font-body text-sm" style={{ color: '#8bacc5', marginBottom: 16 }}>
+                  <p className="font-body text-sm" style={{ color: 'var(--text-secondary)', marginBottom: 16 }}>
                     or click to browse
                   </p>
                   <span className="tag" style={{ background: 'rgba(79,195,247,0.1)', color: '#4fc3f7' }}>
@@ -250,7 +250,7 @@ export default function UploadPage() {
                       borderRadius: 8, padding: '10px 14px', textAlign: 'center',
                     }}>
                       <div className="font-display text-xl" style={{ color: '#4fc3f7' }}>{s.value}</div>
-                      <div className="font-code text-xs" style={{ color: '#4a6d8a', letterSpacing: '0.08em' }}>{s.label}</div>
+                      <div className="font-code text-xs" style={{ color: 'var(--text-muted)', letterSpacing: '0.08em' }}>{s.label}</div>
                     </div>
                   ))}
                 </div>
@@ -266,10 +266,10 @@ export default function UploadPage() {
                   </div>
                 )}
 
-                <p className="font-code text-xs mb-2" style={{ color: '#4a6d8a' }}>DEPARTMENTS DETECTED</p>
+                <p className="font-code text-xs mb-2" style={{ color: 'var(--text-muted)' }}>DEPARTMENTS DETECTED</p>
                 <div className="flex flex-wrap gap-2 mb-4">
                   {preview.departments.map((d) => (
-                    <span key={d} className="tag" style={{ background: 'rgba(79,195,247,0.08)', color: '#8bacc5' }}>
+                    <span key={d} className="tag" style={{ background: 'rgba(79,195,247,0.08)', color: 'var(--text-secondary)' }}>
                       {d}
                     </span>
                   ))}
@@ -305,13 +305,13 @@ export default function UploadPage() {
                       <span className="font-code text-xs" style={{ color: '#4fc3f7' }}>{col.name}</span>
                       <span className="tag" style={{
                         background: col.required ? 'rgba(0,212,160,0.1)' : 'rgba(74,109,138,0.2)',
-                        color: col.required ? '#00d4a0' : '#4a6d8a',
+                        color: col.required ? '#00d4a0' : 'var(--text-muted)',
                         fontSize: '0.55rem',
                       }}>
                         {col.required ? 'REQUIRED' : 'OPTIONAL'}
                       </span>
                     </div>
-                    <p className="font-body" style={{ fontSize: '0.72rem', color: '#8bacc5' }}>{col.desc}</p>
+                    <p className="font-body" style={{ fontSize: '0.72rem', color: 'var(--text-secondary)' }}>{col.desc}</p>
                   </div>
                 ))}
               </div>
@@ -321,7 +321,7 @@ export default function UploadPage() {
               <p className="font-code text-xs mb-3" style={{ color: '#f5a623', letterSpacing: '0.08em' }}>
                 ⚠ NOTE
               </p>
-              <p className="font-body" style={{ fontSize: '0.78rem', color: '#8bacc5', lineHeight: 1.6 }}>
+              <p className="font-body" style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
                 Client-side metrics are quick estimates. For full algorithmic accuracy (frustration index via signed graph algorithms, 
                 org cost via betweenness centrality), ensure the backend API is running.
               </p>

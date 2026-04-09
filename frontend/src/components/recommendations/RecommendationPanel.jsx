@@ -115,7 +115,7 @@ export default function RecommendationPanel({ compact = false }) {
               style={{
                 flex: 1, padding: '6px 12px', borderRadius: 6, border: 'none', cursor: 'pointer',
                 background: interpretationMode === mode ? 'rgba(79,195,247,0.12)' : 'transparent',
-                color: interpretationMode === mode ? '#4fc3f7' : '#4a6d8a',
+                color: interpretationMode === mode ? '#4fc3f7' : 'var(--text-muted)',
                 fontFamily: "'Space Mono', monospace", fontSize: '0.65rem', letterSpacing: '0.08em',
                 textTransform: 'uppercase', transition: 'all 0.2s',
               }}
@@ -138,7 +138,7 @@ export default function RecommendationPanel({ compact = false }) {
           {pendingChanges.map((c, i) => (
             <div key={i} style={{
               fontFamily: "'JetBrains Mono', monospace", fontSize: '0.68rem',
-              color: '#8bacc5', padding: '2px 0',
+              color: 'var(--text-secondary)', padding: '2px 0',
             }}>
               • {c.description}
             </div>
@@ -154,10 +154,10 @@ export default function RecommendationPanel({ compact = false }) {
 
         {fiInterp && (
           <div className={interpretationMode === 'after' ? 'interpretation-after' : 'interpretation-before'} style={{ marginBottom: 12 }}>
-            <p style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.63rem', color: '#4a6d8a', marginBottom: 4, letterSpacing: '0.06em' }}>
+            <p style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.63rem', color: 'var(--text-muted)', marginBottom: 4, letterSpacing: '0.06em' }}>
               FRUSTRATION INDEX
             </p>
-            <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '0.76rem', color: '#8bacc5', lineHeight: 1.65 }}>
+            <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '0.76rem', color: 'var(--text-secondary)', lineHeight: 1.65 }}>
               {fiInterp}
             </p>
           </div>
@@ -165,10 +165,10 @@ export default function RecommendationPanel({ compact = false }) {
 
         {ocInterp && (
           <div className={interpretationMode === 'after' ? 'interpretation-after' : 'interpretation-before'}>
-            <p style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.63rem', color: '#4a6d8a', marginBottom: 4, letterSpacing: '0.06em' }}>
+            <p style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.63rem', color: 'var(--text-muted)', marginBottom: 4, letterSpacing: '0.06em' }}>
               ORGANISATIONAL COST
             </p>
-            <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '0.76rem', color: '#8bacc5', lineHeight: 1.65 }}>
+            <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '0.76rem', color: 'var(--text-secondary)', lineHeight: 1.65 }}>
               {ocInterp}
             </p>
           </div>
@@ -190,7 +190,7 @@ export default function RecommendationPanel({ compact = false }) {
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
                   <rec.icon size={13} style={{ color: rec.color }} />
-                  <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.7rem', color: '#e8f4fd' }}>
+                  <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.7rem', color: 'var(--text-primary)' }}>
                     {rec.title}
                   </span>
                   <span style={{
@@ -201,12 +201,12 @@ export default function RecommendationPanel({ compact = false }) {
                     {rec.priority}
                   </span>
                 </div>
-                <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '0.72rem', color: '#8bacc5', lineHeight: 1.6, marginBottom: 6 }}>
+                <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '0.72rem', color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: 6 }}>
                   {rec.action}
                 </p>
                 {rec.expectedDelta !== 0 && (
                   <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                    <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.62rem', color: '#4a6d8a' }}>
+                    <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.62rem', color: 'var(--text-muted)' }}>
                       Expected Δ {rec.metric}:
                     </span>
                     <span style={{

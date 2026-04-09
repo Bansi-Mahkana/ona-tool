@@ -12,14 +12,14 @@ function CustomTooltip({ active, payload, label }) {
   if (!active || !payload?.length) return null
   return (
     <div style={{
-      background: '#0d1f33', border: '1px solid rgba(79,195,247,0.25)',
+      background: 'var(--bg-secondary)', border: '1px solid rgba(79,195,247,0.25)',
       borderRadius: 8, padding: '10px 14px',
       fontFamily: "'JetBrains Mono', monospace", fontSize: '0.72rem',
     }}>
       <div style={{ color: '#4fc3f7', marginBottom: 6, letterSpacing: '0.05em' }}>{label}</div>
       {payload.map((p) => (
         <div key={p.dataKey} style={{ color: p.color, marginBottom: 2 }}>
-          {p.name}: <b style={{ color: '#e8f4fd' }}>{typeof p.value === 'number' ? p.value.toFixed(4) : p.value}</b>
+          {p.name}: <b style={{ color: 'var(--text-primary)' }}>{typeof p.value === 'number' ? p.value.toFixed(4) : p.value}</b>
         </div>
       ))}
     </div>
@@ -65,7 +65,7 @@ export default function CentralityChart({ metric = 'betweenness' }) {
 
   if (!chartData.length) {
     return (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 300, color: '#4a6d8a', fontFamily: "'Space Mono', monospace", fontSize: '0.8rem' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 300, color: 'var(--text-muted)', fontFamily: "'Space Mono', monospace", fontSize: '0.8rem' }}>
         No centrality data available
       </div>
     )
@@ -79,13 +79,13 @@ export default function CentralityChart({ metric = 'betweenness' }) {
         <BarChart data={chartData} margin={{ top: 10, right: 20, left: 0, bottom: 60 }}>
           <XAxis
             dataKey="name"
-            tick={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, fill: '#8bacc5' }}
+            tick={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, fill: 'var(--text-secondary)' }}
             angle={-40} textAnchor="end" interval={0}
             axisLine={{ stroke: 'rgba(79,195,247,0.15)' }}
             tickLine={false}
           />
           <YAxis
-            tick={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 10, fill: '#4a6d8a' }}
+            tick={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 10, fill: 'var(--text-muted)' }}
             axisLine={false} tickLine={false}
             domain={[0, maxVal * 1.15]}
           />
@@ -115,17 +115,17 @@ export default function CentralityChart({ metric = 'betweenness' }) {
               }}>
                 #{i + 1}
               </span>
-              <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.72rem', color: '#e8f4fd' }}>
+              <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.72rem', color: 'var(--text-primary)' }}>
                 {d.name}
               </span>
             </div>
-            <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '0.68rem', color: '#4a6d8a', marginBottom: 4 }}>
+            <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '0.68rem', color: 'var(--text-muted)', marginBottom: 4 }}>
               {d.department}
             </div>
             <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.75rem', color: DEPT_COLORS[d.deptIdx % DEPT_COLORS.length] }}>
               {d[metric].toFixed(4)}
             </div>
-            <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '0.65rem', color: '#4a6d8a', marginTop: 2 }}>
+            <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '0.65rem', color: 'var(--text-muted)', marginTop: 2 }}>
               Degree: {d.rawDegree} connections
             </div>
           </div>
@@ -134,12 +134,12 @@ export default function CentralityChart({ metric = 'betweenness' }) {
 
       {metric === 'betweenness' && (
         <p style={{
-          fontFamily: "'DM Sans', sans-serif", fontSize: '0.72rem', color: '#4a6d8a',
+          fontFamily: "'DM Sans', sans-serif", fontSize: '0.72rem', color: 'var(--text-muted)',
           marginTop: 14, lineHeight: 1.65, padding: '10px 14px',
           background: 'rgba(79,195,247,0.03)', borderRadius: 6,
           border: '1px solid rgba(79,195,247,0.08)',
         }}>
-          <b style={{ color: '#8bacc5' }}>Betweenness centrality</b> measures how often a node appears on
+          <b style={{ color: 'var(--text-secondary)' }}>Betweenness centrality</b> measures how often a node appears on
           the shortest path between other nodes. High values indicate bottlenecks — removing or
           overloading these individuals could fragment the network.
         </p>

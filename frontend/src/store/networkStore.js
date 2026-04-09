@@ -36,6 +36,7 @@ const useNetworkStore = create((set, get) => ({
   activeTab: 'network',     // 'network' | 'hierarchy' | 'signed'
   sidebarOpen: true,
   interpretationMode: 'current', // 'current' | 'after'
+  theme: 'dark',
 
   // ── Actions ──────────────────────────────────────────────────────
   setRawData: (data, fileName) => set({ rawData: data, fileName }),
@@ -59,6 +60,7 @@ const useNetworkStore = create((set, get) => ({
   setSelectedEdge: (edge) => set({ selectedEdge: edge }),
   setActiveTab: (tab) => set({ activeTab: tab }),
   toggleSidebar: () => set((s) => ({ sidebarOpen: !s.sidebarOpen })),
+  toggleTheme: () => set((s) => ({ theme: s.theme === 'light' ? 'dark' : 'light' })),
   setInterpretationMode: (mode) => set({ interpretationMode: mode }),
 
   // Move employee from one department to another (experiment)

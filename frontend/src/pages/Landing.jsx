@@ -84,7 +84,7 @@ export default function Landing() {
           <h1 className="font-display animate-fade-up delay-100" style={{
             fontSize: 'clamp(2.4rem, 6vw, 4.5rem)',
             lineHeight: 1.1,
-            color: '#e8f4fd',
+            color: 'var(--text-primary)',
             marginBottom: 24,
           }}>
             Organisational<br />
@@ -93,7 +93,7 @@ export default function Landing() {
 
           <p className="font-body animate-fade-up delay-200" style={{
             fontSize: '1.15rem',
-            color: '#8bacc5',
+            color: 'var(--text-secondary)',
             maxWidth: 600,
             margin: '0 auto 48px',
             lineHeight: 1.7,
@@ -123,7 +123,7 @@ export default function Landing() {
 
         {/* How it works */}
         <div className="mb-24 animate-fade-up delay-400">
-          <p className="font-code text-xs mb-8 text-center" style={{ color: '#4a6d8a', letterSpacing: '0.15em' }}>
+          <p className="font-code text-xs mb-8 text-center" style={{ color: 'var(--text-muted)', letterSpacing: '0.15em' }}>
             HOW IT WORKS
           </p>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -138,10 +138,10 @@ export default function Landing() {
                 <div className="font-code text-xs mb-2" style={{ color: '#00d4a0', letterSpacing: '0.08em' }}>
                   STEP {step.num}
                 </div>
-                <h3 className="font-display text-sm mb-2" style={{ color: '#e8f4fd' }}>
+                <h3 className="font-display text-sm mb-2" style={{ color: 'var(--text-primary)' }}>
                   {step.title}
                 </h3>
-                <p className="font-body text-xs" style={{ color: '#8bacc5', lineHeight: 1.6 }}>
+                <p className="font-body text-xs" style={{ color: 'var(--text-secondary)', lineHeight: 1.6 }}>
                   {step.desc}
                 </p>
               </div>
@@ -151,7 +151,7 @@ export default function Landing() {
 
         {/* Features grid */}
         <div className="mb-24">
-          <p className="font-code text-xs mb-8 text-center" style={{ color: '#4a6d8a', letterSpacing: '0.15em' }}>
+          <p className="font-code text-xs mb-8 text-center" style={{ color: 'var(--text-muted)', letterSpacing: '0.15em' }}>
             CAPABILITIES
           </p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -163,10 +163,10 @@ export default function Landing() {
                 }}>
                   <f.icon size={18} style={{ color: f.color }} />
                 </div>
-                <h3 className="font-display text-sm mb-2" style={{ color: '#e8f4fd' }}>
+                <h3 className="font-display text-sm mb-2" style={{ color: 'var(--text-primary)' }}>
                   {f.title}
                 </h3>
-                <p className="font-body text-sm" style={{ color: '#8bacc5', lineHeight: 1.65 }}>
+                <p className="font-body text-sm" style={{ color: 'var(--text-secondary)', lineHeight: 1.65 }}>
                   {f.desc}
                 </p>
               </div>
@@ -183,14 +183,14 @@ export default function Landing() {
             <div style={{
               width: 4, height: 24, background: '#4fc3f7', borderRadius: 2,
             }} />
-            <h2 className="font-display text-sm" style={{ color: '#e8f4fd', letterSpacing: '0.05em' }}>
+            <h2 className="font-display text-sm" style={{ color: 'var(--text-primary)', letterSpacing: '0.05em' }}>
               Cross-Parker Dataset Integration
             </h2>
             <span className="tag" style={{ background: 'rgba(79,195,247,0.1)', color: '#4fc3f7', marginLeft: 'auto' }}>
               SIGNED NETWORKS
             </span>
           </div>
-          <p className="font-body text-sm mb-6" style={{ color: '#8bacc5', lineHeight: 1.7 }}>
+          <p className="font-body text-sm mb-6" style={{ color: 'var(--text-secondary)', lineHeight: 1.7 }}>
             This tool supports the famous Cross-Parker dataset's four survey dimensions. 
             When your CSV includes columns <code className="font-code text-xs" style={{ color: '#4fc3f7', background: 'rgba(79,195,247,0.1)', padding: '2px 6px', borderRadius: 4 }}>q1, q2, q3, q4</code>, 
             edges are automatically classified as positive (+), negative (−), or neutral based on a 
@@ -204,8 +204,8 @@ export default function Landing() {
               { q: 'Q4', label: 'Knowledge Awareness', scale: '0–6', desc: 'Do you understand this person\'s knowledge and skills?' },
             ].map((item) => (
               <div key={item.q} style={{
-                background: 'rgba(13,31,51,0.6)',
-                border: '1px solid rgba(79,195,247,0.1)',
+                background: 'var(--bg-secondary)',
+                border: '1px solid var(--border)',
                 borderRadius: 8,
                 padding: '12px 16px',
               }}>
@@ -213,14 +213,14 @@ export default function Landing() {
                   <span className="tag" style={{ background: 'rgba(0,212,160,0.1)', color: '#00d4a0' }}>
                     {item.q}
                   </span>
-                  <span className="font-display text-xs" style={{ color: '#e8f4fd' }}>
+                  <span className="font-display text-xs" style={{ color: 'var(--text-primary)' }}>
                     {item.label}
                   </span>
-                  <span className="font-code text-xs ml-auto" style={{ color: '#4a6d8a' }}>
+                  <span className="font-code text-xs ml-auto" style={{ color: 'var(--text-muted)' }}>
                     Scale {item.scale}
                   </span>
                 </div>
-                <p className="font-body text-xs" style={{ color: '#8bacc5' }}>{item.desc}</p>
+                <p className="font-body text-xs" style={{ color: 'var(--text-secondary)' }}>{item.desc}</p>
               </div>
             ))}
           </div>
@@ -236,7 +236,7 @@ export default function Landing() {
             START YOUR ANALYSIS
             <ArrowRight size={18} style={{ display: 'inline', marginLeft: 12 }} />
           </button>
-          <p className="font-code text-xs mt-4" style={{ color: '#4a6d8a' }}>
+          <p className="font-code text-xs mt-4" style={{ color: 'var(--text-muted)' }}>
             Upload a CSV · No data stored · Results computed locally + via API
           </p>
         </div>

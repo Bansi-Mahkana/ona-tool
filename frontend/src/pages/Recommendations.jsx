@@ -59,8 +59,8 @@ export default function Recommendations() {
             <ArrowLeft size={12} /> Back
           </button>
           <div>
-            <p style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.6rem', color: '#4a6d8a', letterSpacing: '0.1em' }}>STEP 04</p>
-            <h1 style={{ fontFamily: "'Space Mono', monospace", fontSize: '1.5rem', color: '#e8f4fd', margin: 0 }}>
+            <p style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.6rem', color: 'var(--text-muted)', letterSpacing: '0.1em' }}>STEP 04</p>
+            <h1 style={{ fontFamily: "'Space Mono', monospace", fontSize: '1.5rem', color: 'var(--text-primary)', margin: 0 }}>
               Optimisation Recommendations
             </h1>
           </div>
@@ -96,7 +96,7 @@ export default function Recommendations() {
                 display: 'flex', alignItems: 'flex-start', gap: 10,
               }}>
                 <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#00d4a0', marginTop: 5, flexShrink: 0 }} />
-                <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '0.8rem', color: '#8bacc5', lineHeight: 1.6, margin: 0 }}>
+                <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0 }}>
                   {backendRecs.summary}
                 </p>
               </div>
@@ -109,7 +109,7 @@ export default function Recommendations() {
                   METRIC COMPARISON
                 </p>
                 {!hasChanges && (
-                  <span style={{ marginLeft: 'auto', fontFamily: "'JetBrains Mono', monospace", fontSize: '0.6rem', color: '#4a6d8a' }}>
+                  <span style={{ marginLeft: 'auto', fontFamily: "'JetBrains Mono', monospace", fontSize: '0.6rem', color: 'var(--text-muted)' }}>
                     Snapshot a state in Analysis to compare →
                   </span>
                 )}
@@ -142,8 +142,8 @@ export default function Recommendations() {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
                   {pendingChanges.map((c, i) => (
                     <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 12px', borderRadius: 6, background: 'rgba(245,166,35,0.04)', border: '1px solid rgba(245,166,35,0.12)' }}>
-                      <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.6rem', color: '#4a6d8a', width: 18, textAlign: 'center' }}>{i+1}</span>
-                      <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '0.76rem', color: '#e8f4fd' }}>{c.description}</span>
+                      <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.6rem', color: 'var(--text-muted)', width: 18, textAlign: 'center' }}>{i+1}</span>
+                      <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '0.76rem', color: 'var(--text-primary)' }}>{c.description}</span>
                       <span style={{ marginLeft: 'auto', fontFamily: "'JetBrains Mono', monospace", fontSize: '0.58rem', color: '#f5a623', background: 'rgba(245,166,35,0.08)', padding: '1px 6px', borderRadius: 4 }}>{c.type}</span>
                     </div>
                   ))}
@@ -168,12 +168,12 @@ export default function Recommendations() {
                 ].map((s) => (
                   <div key={s.label} style={{ textAlign: 'center', padding: 12, borderRadius: 8, background: `${s.color}08`, border: `1px solid ${s.color}18` }}>
                     <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '1.5rem', color: s.color, fontWeight: 700 }}>{s.value}</div>
-                    <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '0.68rem', color: '#4a6d8a', marginTop: 2 }}>{s.label}</div>
+                    <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: 2 }}>{s.label}</div>
                   </div>
                 ))}
               </div>
 
-              <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '0.74rem', color: '#8bacc5', lineHeight: 1.65, margin: 0 }}>
+              <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '0.74rem', color: 'var(--text-secondary)', lineHeight: 1.65, margin: 0 }}>
                 Based on Heider's structural balance theory, a network is <em>balanced</em> when every
                 triangle has 0 or 2 negative edges. Triangles with 1 or 3 negative edges are
                 <b style={{ color: '#ff4757' }}> frustrated</b> — each one contributes to the Frustration Index.
@@ -197,17 +197,17 @@ export default function Recommendations() {
                     return (
                       <div key={i} style={{ padding: 11, borderRadius: 8, background: `${prioColor}07`, border: `1px solid ${prioColor}18` }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 5 }}>
-                          <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.68rem', color: '#e8f4fd' }}>{rec.title}</span>
+                          <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.68rem', color: 'var(--text-primary)' }}>{rec.title}</span>
                           <span style={{ marginLeft: 'auto', fontFamily: "'JetBrains Mono', monospace", fontSize: '0.56rem', color: prioColor, background: `${prioColor}15`, padding: '1px 5px', borderRadius: 4 }}>
                             {rec.priority}
                           </span>
                         </div>
-                        <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '0.7rem', color: '#8bacc5', lineHeight: 1.6, margin: '0 0 6px' }}>
+                        <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '0.7rem', color: 'var(--text-secondary)', lineHeight: 1.6, margin: '0 0 6px' }}>
                           {rec.action}
                         </p>
                         {rec.expected_delta !== 0 && (
                           <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
-                            <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.6rem', color: '#4a6d8a' }}>Δ {rec.metric}:</span>
+                            <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.6rem', color: 'var(--text-muted)' }}>Δ {rec.metric}:</span>
                             <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.6rem', color: rec.expected_delta < 0 ? '#00d4a0' : '#ff4757' }}>
                               {rec.expected_delta > 0 ? '+' : ''}{(rec.expected_delta * 100).toFixed(0)}%
                             </span>

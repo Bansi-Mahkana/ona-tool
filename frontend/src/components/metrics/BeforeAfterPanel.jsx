@@ -44,7 +44,7 @@ export default function BeforeAfterPanel({ before, after, labels = {} }) {
             <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'center', gap: 12 }}>
               {/* Before */}
               <div style={{ textAlign: 'center' }}>
-                <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.58rem', color: '#4a6d8a', marginBottom: 6, letterSpacing: '0.08em' }}>
+                <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.58rem', color: 'var(--text-muted)', marginBottom: 6, letterSpacing: '0.08em' }}>
                   BEFORE
                 </p>
                 <MetricGauge
@@ -57,7 +57,7 @@ export default function BeforeAfterPanel({ before, after, labels = {} }) {
 
               {/* Arrow + delta */}
               <div style={{ textAlign: 'center', paddingBottom: 28, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
-                <ArrowRight size={16} style={{ color: '#4a6d8a' }} />
+                <ArrowRight size={16} style={{ color: 'var(--text-muted)' }} />
                 {delta !== null && (
                   <div style={{
                     display: 'flex', alignItems: 'center', gap: 3,
@@ -70,11 +70,11 @@ export default function BeforeAfterPanel({ before, after, labels = {} }) {
                     ) : worsened ? (
                       <TrendingUp size={10} style={{ color: '#ff4757' }} />
                     ) : (
-                      <Minus size={10} style={{ color: '#4a6d8a' }} />
+                      <Minus size={10} style={{ color: 'var(--text-muted)' }} />
                     )}
                     <span style={{
                       fontFamily: "'JetBrains Mono', monospace", fontSize: '0.6rem',
-                      color: improved ? '#00d4a0' : worsened ? '#ff4757' : '#4a6d8a',
+                      color: improved ? '#00d4a0' : worsened ? '#ff4757' : 'var(--text-muted)',
                     }}>
                       {delta > 0 ? '+' : ''}{(delta * 100).toFixed(1)}%
                     </span>
@@ -84,7 +84,7 @@ export default function BeforeAfterPanel({ before, after, labels = {} }) {
 
               {/* After */}
               <div style={{ textAlign: 'center' }}>
-                <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.58rem', color: improved ? '#00d4a0' : '#4a6d8a', marginBottom: 6, letterSpacing: '0.08em' }}>
+                <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.58rem', color: improved ? '#00d4a0' : 'var(--text-muted)', marginBottom: 6, letterSpacing: '0.08em' }}>
                   AFTER
                 </p>
                 <MetricGauge
@@ -105,7 +105,7 @@ export default function BeforeAfterPanel({ before, after, labels = {} }) {
                   fontFamily: "'Space Mono', monospace", fontSize: '0.62rem',
                   padding: '3px 10px', borderRadius: 99,
                   background: improved ? 'rgba(0,212,160,0.08)' : worsened ? 'rgba(255,71,87,0.08)' : 'rgba(74,109,138,0.08)',
-                  color: improved ? '#00d4a0' : worsened ? '#ff4757' : '#4a6d8a',
+                  color: improved ? '#00d4a0' : worsened ? '#ff4757' : 'var(--text-muted)',
                   border: `1px solid ${improved ? 'rgba(0,212,160,0.2)' : worsened ? 'rgba(255,71,87,0.2)' : 'rgba(74,109,138,0.15)'}`,
                 }}>
                   {unchanged ? 'No change' : improved ? '✓ Improved' : '✗ Worsened'}

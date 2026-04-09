@@ -51,7 +51,7 @@ export default function MetricCard({
         <p style={{
           fontFamily: "'DM Sans', sans-serif",
           fontSize: '0.72rem',
-          color: '#8bacc5',
+          color: 'var(--text-secondary)',
           lineHeight: 1.65,
           textAlign: 'center',
           padding: '0 4px',

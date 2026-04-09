@@ -61,7 +61,7 @@ export default function HierarchyGraph({ width = 700, height = 500 }) {
       .attr('dy', (d) => d.depth === 2 ? -14 : 0)
       .attr('text-anchor', 'middle')
       .attr('dominant-baseline', (d) => d.depth === 2 ? undefined : 'central')
-      .attr('fill', (d) => d.depth === 0 ? '#4fc3f7' : d.depth === 1 ? '#00d4a0' : '#8bacc5')
+      .attr('fill', (d) => d.depth === 0 ? '#4fc3f7' : d.depth === 1 ? '#00d4a0' : 'var(--text-secondary)')
       .attr('font-family', (d) => d.depth < 2 ? "'Space Mono', monospace" : "'DM Sans', sans-serif")
       .attr('font-size', (d) => d.depth === 0 ? 10 : d.depth === 1 ? 9 : 8)
       .attr('font-weight', (d) => d.depth < 2 ? 700 : 400)
@@ -77,7 +77,7 @@ export default function HierarchyGraph({ width = 700, height = 500 }) {
     return (
       <div style={{
         width, height, display: 'flex', alignItems: 'center', justifyContent: 'center',
-        color: '#4a6d8a', fontFamily: "'Space Mono', monospace", fontSize: '0.8rem',
+        color: 'var(--text-muted)', fontFamily: "'Space Mono', monospace", fontSize: '0.8rem',
       }}>
         No hierarchy data
       </div>

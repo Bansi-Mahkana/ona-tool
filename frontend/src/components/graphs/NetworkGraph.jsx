@@ -152,10 +152,10 @@ export default function NetworkGraph({ onNodeClick, onEdgeClick, width = 700, he
         const hasQ = [d.q1,d.q2,d.q3,d.q4].some((v) => v != null)
         tip.innerHTML = `
           <div style="font-size:.65rem;color:#4fc3f7;letter-spacing:.1em;margin-bottom:5px">EDGE</div>
-          <div style="font-weight:600;color:#e8f4fd;margin-bottom:3px">${s} → ${t}</div>
-          <div>Weight: <b style="color:#e8f4fd">${d.weight ?? 1}</b></div>
+          <div style="font-weight:600;color:var(--text-primary);margin-bottom:3px">${s} → ${t}</div>
+          <div>Weight: <b style="color:var(--text-primary)">${d.weight ?? 1}</b></div>
           <div>Sign: <b style="color:${sc}">${sl}</b></div>
-          ${hasQ ? `<div style="margin-top:5px;font-size:.62rem;color:#4a6d8a">Q1:${d.q1??'—'} Q2:${d.q2??'—'} Q3:${d.q3??'—'} Q4:${d.q4??'—'}</div>` : ''}
+          ${hasQ ? `<div style="margin-top:5px;font-size:.62rem;color:var(--text-muted)">Q1:${d.q1??'—'} Q2:${d.q2??'—'} Q3:${d.q3??'—'} Q4:${d.q4??'—'}</div>` : ''}
         `
         tip.style.display = 'block'
         tip.style.left = (e.offsetX + 14) + 'px'
@@ -183,9 +183,9 @@ export default function NetworkGraph({ onNodeClick, onEdgeClick, width = 700, he
         }).length
         tip.innerHTML = `
           <div style="font-size:.65rem;color:#4fc3f7;letter-spacing:.1em;margin-bottom:5px">EMPLOYEE</div>
-          <div style="font-weight:700;font-size:.9rem;color:#e8f4fd;margin-bottom:3px">${d.id}</div>
+          <div style="font-weight:700;font-size:.9rem;color:var(--text-primary);margin-bottom:3px">${d.id}</div>
           <div style="color:${colorByDept[d.department]};margin-bottom:3px">${d.department}</div>
-          <div style="font-size:.65rem;color:#4a6d8a">Connections: ${deg}</div>
+          <div style="font-size:.65rem;color:var(--text-muted)">Connections: ${deg}</div>
         `
         tip.style.display = 'block'
         tip.style.left = (e.offsetX + 14) + 'px'
@@ -209,7 +209,7 @@ export default function NetworkGraph({ onNodeClick, onEdgeClick, width = 700, he
     node.append('text')
       .text((d) => d.id)
       .attr('y', 22).attr('text-anchor', 'middle')
-      .attr('fill', '#8bacc5').attr('font-family', "'DM Sans', sans-serif").attr('font-size', 9)
+      .attr('fill', 'var(--text-secondary)').attr('font-family', "'DM Sans', sans-serif").attr('font-size', 9)
       .style('pointer-events', 'none')
 
     sim.on('tick', () => {
@@ -247,7 +247,7 @@ export default function NetworkGraph({ onNodeClick, onEdgeClick, width = 700, he
         .attr('fill', `${colorByDept[dept]}25`).attr('stroke', colorByDept[dept])
         .attr('stroke-width', 1.5).attr('opacity', faded ? 0.3 : 1)
       row.append('text').text(dept).attr('x', 12).attr('dy', '0.35em')
-        .attr('fill', faded ? '#3a5a74' : '#8bacc5')
+        .attr('fill', faded ? '#3a5a74' : 'var(--text-secondary)')
         .attr('font-family', "'DM Sans', sans-serif").attr('font-size', 10)
     })
 
@@ -260,7 +260,7 @@ export default function NetworkGraph({ onNodeClick, onEdgeClick, width = 700, he
 
   if (!graphData) {
     return (
-      <div style={{ width, height, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#4a6d8a', fontFamily: "'Space Mono', monospace", fontSize: '0.8rem' }}>
+      <div style={{ width, height, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', fontFamily: "'Space Mono', monospace", fontSize: '0.8rem' }}>
         No network data loaded
       </div>
     )
