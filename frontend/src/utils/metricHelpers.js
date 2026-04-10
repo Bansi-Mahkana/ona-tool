@@ -35,67 +35,49 @@ export function estimateFrustrationIndex(nodes, links) {
   return parseFloat(frustration.toFixed(3))
 }
 
-/**
- * Estimate organisational cost (0-1).
- * Proxy: based on average path length and bridging bottlenecks.
- * Higher cost = inefficient information flow.
- */
-export function estimateOrganizationalCost(nodes, links) {
-  if (!nodes?.length || !links?.length) return 0
+export function estimateOrganizationalPositivity(links) {
+  if (!links || links.length === 0) return null
+  const pos = links.filter(l => l.sign === 1).length
+  return parseFloat((pos / links.length).toFixed(4))
+}
 
-  const n = nodes.length
-  const density = links.length / (n * (n - 1))
+export function estimateInternalPositivity(nodes, links) {
+  if (!nodes || !links) return null
+  const internal = {}
+  const nodeDept = {}
+  nodes.forEach((n) => { nodeDept[n.id] = n.department || 'Unknown' })
 
-  // Build adjacency for degree calculation
-  const degree = {}
-  nodes.forEach((nd) => (degree[nd.id] = 0))
-  links.forEach((l) => {
-    degree[l.source] = (degree[l.source] || 0) + 1
-    degree[l.target] = (degree[l.target] || 0) + 1
+  const total = {}
+  const pos = {}
+
+  nodes.forEach((n) => {
+    const d = n.department || 'Unknown'
+    internal[d] = 0; total[d] = 0; pos[d] = 0;
   })
 
-  // Variance in degree (inequality of connections → higher cost)
-  const degrees = Object.values(degree)
-  const avgDeg = degrees.reduce((a, b) => a + b, 0) / degrees.length
-  const variance = degrees.reduce((a, b) => a + (b - avgDeg) ** 2, 0) / degrees.length
-  const normVariance = Math.min(1, variance / (avgDeg ** 2 + 1))
-
-  const cost = Math.min(1, normVariance * 0.5 + (1 - density) * 0.5)
-  return parseFloat(cost.toFixed(3))
-}
-
-/**
- * Compute network density.
- */
-export function computeDensity(nodes, links) {
-  const n = nodes?.length || 0
-  if (n < 2) return 0
-  return parseFloat((links.length / (n * (n - 1))).toFixed(4))
-}
-
-/**
- * Count nodes with degree 0 (isolated).
- */
-export function countIsolated(nodes, links) {
-  const connected = new Set()
   links.forEach((l) => {
-    connected.add(l.source)
-    connected.add(l.target)
+    const src = typeof l.source === 'object' ? l.source.id : l.source
+    const tgt = typeof l.target === 'object' ? l.target.id : l.target
+    const d = nodeDept[src]
+    if (d && d === nodeDept[tgt]) {
+      total[d]++
+      if (l.sign === 1) pos[d]++
+    }
   })
-  return nodes.filter((n) => !connected.has(n.id)).length
+
+  Object.keys(total).forEach((d) => {
+    internal[d] = total[d] > 0 ? parseFloat((pos[d] / total[d]).toFixed(4)) : 0
+  })
+
+  return internal
 }
 
-/**
- * Compute signed network balance (0-1, 1 = perfectly balanced).
- * Based on Heider's structural balance theory:
- * A network is balanced if all cycles have an even number of negative edges.
- */
-export function computeSignedBalance(links) {
-  const positiveEdges = links.filter((l) => l.sign === 1).length
-  const negativeEdges = links.filter((l) => l.sign === -1).length
-  const total = positiveEdges + negativeEdges
-  if (total === 0) return null
-  return parseFloat((positiveEdges / total).toFixed(3))
+export function estimateOrganizationalBalance(nodes, links) {
+  return estimateOrganizationalPositivity(links) // Very rough proxy
+}
+
+export function estimateInternalBalance(nodes, links) {
+  return estimateInternalPositivity(nodes, links) // Very rough proxy
 }
 
 /**
@@ -145,17 +127,20 @@ export function interpretFrustrationIndex(value) {
 }
 
 /**
- * Generate interpretation text for organisational cost.
+ * Generate interpretation text for positivity/balance.
  */
-export function interpretOrganizationalCost(value) {
+export function interpretPositivity(value) {
   if (value === null) return null
-  if (value <= 0.2)
-    return 'Organisational cost is minimal. The network is efficient — information reaches most nodes via short paths and connection distribution is equitable.'
-  if (value <= 0.4)
-    return 'Moderate organisational cost. There are noticeable bottlenecks and uneven degree distribution. Some employees carry disproportionate communication load.'
-  if (value <= 0.6)
-    return 'High organisational cost. The network has structural inefficiencies — long average paths and high-degree hubs suggest that information gets filtered or delayed through key individuals.'
-  return 'Critical organisational cost. The network is highly centralised or fragmented. Removing one or two key connectors could isolate significant parts of the organisation.'
+  if (value >= 0.7) return 'High positivity. Most ties are supportive and collaborative.'
+  if (value >= 0.4) return 'Moderate positivity. A mix of supportive, neutral, and conflicted ties.'
+  return 'Low positivity. The network lacks strong collaborative ties, potentially hindering effectiveness.'
+}
+
+export function interpretBalance(value) {
+  if (value === null) return null
+  if (value >= 0.7) return 'High balance. Triadic relationships are mostly stable and harmonious.'
+  if (value >= 0.4) return 'Moderate balance. Some conflicted or unstable triads exist.'
+  return 'Low balance. Many unstable triangles, indicating high structural tension and conflict.'
 }
 
 /**
@@ -174,9 +159,10 @@ export function interpretChange(before, after, metricName) {
       ? delta < 0
         ? `This is a positive improvement — the network is becoming more balanced with fewer conflicted triadic relationships.`
         : `This worsens structural balance, suggesting the added/removed connection introduces more asymmetric relationships.`
-      : delta < 0
-      ? `This is a positive improvement — information can flow more efficiently through the reorganised structure.`
-      : `This increases the cost of coordination, possibly due to increased path lengths or over-centralisation.`
+      : delta > 0
+      ? `This is a positive improvement — the metric increased.`
+      : `This is a negative outcome — the metric decreased.`
 
-  return `The ${metricName === 'frustrationIndex' ? 'Frustration Index' : 'Organisational Cost'} ${dir} by ${pct}%. ${implication}`
+  const legibleName = metricName === 'frustrationIndex' ? 'Frustration Index' : metricName
+  return `The ${legibleName} ${dir} by ${pct}%. ${implication}`
 }

@@ -7,9 +7,14 @@ import numpy as np
 
 from ..models.graph_models import GraphIn, MetricsOut, ChangeRequest
 from ..services.graph_builder import build_nx_graph, build_undirected
-from ..services.signed_network import annotate_signs, compute_signed_balance_ratio
+from ..services.signed_network import (
+    annotate_signs,
+    compute_organizational_positivity,
+    compute_internal_positivity,
+    compute_organizational_balance,
+    compute_internal_balance,
+)
 from ..services.frustration_index import compute_frustration_index
-from ..services.organizational_cost import compute_organizational_cost
 
 router = APIRouter(prefix="/network", tags=["network"])
 
@@ -30,40 +35,12 @@ async def compute_metrics(graph: GraphIn):
 
         # ── Core metrics ──────────────────────────────────────────────────
         frustration_index = compute_frustration_index(G)
-        organizational_cost = compute_organizational_cost(G)
-        network_density = nx.density(G)
-
-        # Average path length (largest connected component)
-        avg_path_length = None
-        try:
-            if nx.is_connected(UG):
-                avg_path_length = round(nx.average_shortest_path_length(UG), 4)
-            else:
-                largest_cc = max(nx.connected_components(UG), key=len)
-                sub = UG.subgraph(largest_cc)
-                if len(sub) > 1:
-                    avg_path_length = round(nx.average_shortest_path_length(sub), 4)
-        except Exception:
-            pass
-
-        # Clustering coefficient
-        try:
-            clustering = round(nx.average_clustering(UG), 4)
-        except Exception:
-            clustering = 0.0
-
-        # Bridges
-        try:
-            bridge_count = len(list(nx.bridges(UG)))
-        except Exception:
-            bridge_count = 0
-
-        # Isolated nodes
-        connected_nodes = {u for u, v in G.edges()} | {v for u, v in G.edges()}
-        isolated_nodes = len([n for n in G.nodes() if n not in connected_nodes])
-
-        # Signed balance
-        signed_balance = compute_signed_balance_ratio(G)
+        
+        # New Positivity and Balance metrics
+        org_positivity = compute_organizational_positivity(G)
+        org_balance = compute_organizational_balance(G)
+        int_positivity = compute_internal_positivity(G)
+        int_balance = compute_internal_balance(G)
 
         # ── Centrality measures ───────────────────────────────────────────
         try:
@@ -71,28 +48,13 @@ async def compute_metrics(graph: GraphIn):
         except Exception:
             degree_centrality = {}
 
-        try:
-            betweenness_centrality = {k: round(v, 4) for k, v in nx.betweenness_centrality(UG, normalized=True).items()}
-        except Exception:
-            betweenness_centrality = {}
-
-        try:
-            eigenvector_centrality = {k: round(v, 4) for k, v in nx.eigenvector_centrality(UG, max_iter=200).items()}
-        except Exception:
-            eigenvector_centrality = {}
-
         return MetricsOut(
             frustration_index=frustration_index,
-            organizational_cost=organizational_cost,
-            network_density=round(network_density, 4),
-            avg_path_length=avg_path_length,
-            clustering_coefficient=clustering,
-            bridge_count=bridge_count,
-            isolated_nodes=isolated_nodes,
-            signed_balance=signed_balance,
+            organizational_positivity=org_positivity,
+            organizational_balance=org_balance,
+            internal_positivity=int_positivity,
+            internal_balance=int_balance,
             degree_centrality=degree_centrality,
-            betweenness_centrality=betweenness_centrality,
-            eigenvector_centrality=eigenvector_centrality,
         )
 
     except Exception as e:
@@ -117,14 +79,20 @@ async def simulate_change(graph: GraphIn, change: ChangeRequest):
 
         # Original metrics for comparison
         orig_fi = compute_frustration_index(G)
-        orig_oc = compute_organizational_cost(G)
+        orig_org_positivity = compute_organizational_positivity(G)
+        orig_org_balance = compute_organizational_balance(G)
 
         return {
-            "original": {"frustration_index": orig_fi, "organizational_cost": orig_oc},
+            "original": {
+                "frustration_index": orig_fi, 
+                "organizational_positivity": orig_org_positivity,
+                "organizational_balance": orig_org_balance
+            },
             "after_change": new_metrics,
             "delta": {
-                "frustration_index": round(new_metrics["frustration_index"] - orig_fi, 4),
-                "organizational_cost": round(new_metrics["organizational_cost"] - orig_oc, 4),
+                "frustration_index": round(new_metrics.get("frustration_index", orig_fi) - orig_fi, 4),
+                "organizational_positivity": round(new_metrics.get("organizational_positivity", orig_org_positivity) - orig_org_positivity, 4),
+                "organizational_balance": round(new_metrics.get("organizational_balance", orig_org_balance) - orig_org_balance, 4),
             },
         }
     except Exception as e:

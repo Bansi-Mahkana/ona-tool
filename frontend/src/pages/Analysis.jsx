@@ -10,7 +10,7 @@ import HierarchyGraph from '../components/graphs/HierarchyGraph'
 import CentralityChart from '../components/graphs/CentralityChart'
 import MetricGauge from '../components/metrics/MetricGauge'
 import RecommendationPanel from '../components/recommendations/RecommendationPanel'
-import { interpretFrustrationIndex, interpretOrganizationalCost } from '../utils/metricHelpers'
+import { interpretFrustrationIndex, interpretPositivity, interpretBalance } from '../utils/metricHelpers'
 import { useMetrics } from '../hooks/useMetrics'
 
 const TABS = [
@@ -29,7 +29,7 @@ export default function Analysis() {
   const navigate = useNavigate()
   const containerRef = useRef(null)
   const [dims, setDims] = useState({ width: 700, height: 480 })
-  const [centralityMetric, setCentralityMetric] = useState('betweenness')
+  const [centralityMetric, setCentralityMetric] = useState('degree')
 
   // Auto-recalculate metrics when graph changes
   useMetrics()
@@ -79,9 +79,8 @@ export default function Analysis() {
 
   const allMetrics = [
     { key: 'frustrationIndex',    label: 'Frustration Index', subtitle: 'Signed balance',  invertedScale: true  },
-    { key: 'organizationalCost',  label: 'Org Cost',          subtitle: 'Flow efficiency', invertedScale: true  },
-    { key: 'networkDensity',      label: 'Density',           subtitle: 'Connectedness',   invertedScale: false },
-    { key: 'signedBalance',       label: 'Signed Balance',    subtitle: 'Heider balance',  invertedScale: false },
+    { key: 'organizationalPositivity', label: 'Org Positivity', subtitle: 'Supportive ties', invertedScale: false },
+    { key: 'organizationalBalance', label: 'Org Balance',     subtitle: 'Triad harmony',  invertedScale: false },
   ]
 
   return (
@@ -227,7 +226,6 @@ export default function Analysis() {
                   {/* Metric selector */}
                   <div style={{ display: 'flex', gap: 4, marginLeft: 'auto' }}>
                     {[
-                      { id: 'betweenness', label: 'Betweenness' },
                       { id: 'degree', label: 'Degree' },
                     ].map((opt) => (
                       <button
@@ -279,8 +277,10 @@ export default function Analysis() {
                 const prev = snapshotMetrics?.[m.key] ?? null
                 const interp = m.key === 'frustrationIndex'
                   ? interpretFrustrationIndex(val)
-                  : m.key === 'organizationalCost'
-                  ? interpretOrganizationalCost(val)
+                  : m.key === 'organizationalPositivity'
+                  ? interpretPositivity(val)
+                  : m.key === 'organizationalBalance'
+                  ? interpretBalance(val)
                   : null
                 return (
                   <div key={m.key} className="card p-5" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
@@ -302,6 +302,52 @@ export default function Analysis() {
                 )
               })}
 
+              {/* Department level internal metrics */}
+              <div className="card p-5" style={{ gridColumn: '1 / -1' }}>
+                <p style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.65rem', color: '#f5a623', letterSpacing: '0.1em', marginBottom: 14 }}>
+                  DEPARTMENT-LEVEL INTERNAL METRICS
+                </p>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+                  
+                  {/* Internal Positivity */}
+                  <div>
+                    <h4 style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.65rem', color: 'var(--text-primary)', marginBottom: 10 }}>INTERNAL POSITIVITY</h4>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                      {metrics.internalPositivity && Object.entries(metrics.internalPositivity).map(([dept, val]) => (
+                        <div key={dept} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <div style={{ width: 60, fontFamily: "'JetBrains Mono', monospace", fontSize: '0.6rem', color: 'var(--text-muted)' }}>{dept}</div>
+                          <div style={{ flex: 1, height: 6, background: 'var(--bg-secondary)', borderRadius: 3, overflow: 'hidden' }}>
+                            <div style={{ width: `${(val ?? 0) * 100}%`, height: '100%', background: '#4fc3f7', transition: 'width 0.3s' }} />
+                          </div>
+                          <div style={{ width: 30, fontFamily: "'JetBrains Mono', monospace", fontSize: '0.6rem', color: 'var(--text-primary)', textAlign: 'right' }}>
+                            {val !== null ? val.toFixed(2) : '-'}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Internal Balance */}
+                  <div>
+                    <h4 style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.65rem', color: 'var(--text-primary)', marginBottom: 10 }}>INTERNAL BALANCE</h4>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                      {metrics.internalBalance && Object.entries(metrics.internalBalance).map(([dept, val]) => (
+                        <div key={dept} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <div style={{ width: 60, fontFamily: "'JetBrains Mono', monospace", fontSize: '0.6rem', color: 'var(--text-muted)' }}>{dept}</div>
+                          <div style={{ flex: 1, height: 6, background: 'var(--bg-secondary)', borderRadius: 3, overflow: 'hidden' }}>
+                            <div style={{ width: `${(val ?? 0) * 100}%`, height: '100%', background: '#a78bfa', transition: 'width 0.3s' }} />
+                          </div>
+                          <div style={{ width: 30, fontFamily: "'JetBrains Mono', monospace", fontSize: '0.6rem', color: 'var(--text-primary)', textAlign: 'right' }}>
+                            {val !== null ? val.toFixed(2) : '-'}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+
               {/* Network stats card */}
               <div className="card p-5" style={{ gridColumn: '1 / -1' }}>
                 <p style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.65rem', color: '#4fc3f7', letterSpacing: '0.1em', marginBottom: 14 }}>
@@ -311,13 +357,8 @@ export default function Analysis() {
                   {[
                     { label: 'Nodes',              value: graphData?.nodes?.length },
                     { label: 'Edges',              value: graphData?.links?.length },
-                    { label: 'Isolated Nodes',     value: metrics.isolatedNodes },
+                    { label: 'Isolated Nodes',     value: metrics.isolatedNodes ?? 0 },
                     { label: 'Departments',        value: departments.length },
-                    { label: 'Network Density',    value: metrics.networkDensity?.toFixed(4) },
-                    { label: 'Avg Path Length',    value: metrics.avgPathLength ? metrics.avgPathLength.toFixed(2) : '(backend)' },
-                    { label: 'Clustering Coeff.',  value: metrics.clusteringCoefficient ? metrics.clusteringCoefficient.toFixed(3) : '(backend)' },
-                    { label: 'Bridge Edges',       value: metrics.bridgeCount ?? '(backend)' },
-                    { label: 'Signed Balance',     value: metrics.signedBalance?.toFixed(3) ?? 'N/A' },
                     { label: 'Positive Edges',     value: graphData?.links?.filter(l=>l.sign===1).length ?? 0 },
                     { label: 'Negative Edges',     value: graphData?.links?.filter(l=>l.sign===-1).length ?? 0 },
                     { label: 'Neutral Edges',      value: graphData?.links?.filter(l=>l.sign===0).length ?? 0 },

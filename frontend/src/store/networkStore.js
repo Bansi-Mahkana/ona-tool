@@ -16,14 +16,12 @@ const useNetworkStore = create((set, get) => ({
 
   // ── Metrics ──────────────────────────────────────────────────────
   metrics: {
-    frustrationIndex: null,   // 0-1
-    organizationalCost: null, // 0-1
-    networkDensity: null,
-    avgPathLength: null,
-    clusteringCoefficient: null,
-    bridgeCount: null,
-    isolatedNodes: null,
-    signedBalance: null,      // ratio of positive to total signed edges
+    frustrationIndex: null,       // 0-1
+    organizationalPositivity: null,
+    organizationalBalance: null,
+    internalPositivity: null,     // { deptA: 0.5, deptB: ... }
+    internalBalance: null,        // { deptA: 0.2, deptB: ... }
+    degreeCentrality: null,       // { nodeA: 0.1, nodeB: ... }
   },
 
   // ── Snapshot for before/after comparison ─────────────────────────
@@ -115,13 +113,11 @@ const useNetworkStore = create((set, get) => ({
       edgeSigns: {},
       metrics: {
         frustrationIndex: null,
-        organizationalCost: null,
-        networkDensity: null,
-        avgPathLength: null,
-        clusteringCoefficient: null,
-        bridgeCount: null,
-        isolatedNodes: null,
-        signedBalance: null,
+        organizationalPositivity: null,
+        organizationalBalance: null,
+        internalPositivity: null,
+        internalBalance: null,
+        degreeCentrality: null,
       },
       snapshotMetrics: null,
       pendingChanges: [],

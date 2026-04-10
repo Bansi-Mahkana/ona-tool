@@ -63,12 +63,13 @@ export function exportGraphAsJSON(graphData, metrics, filename = 'ona-data.json'
  */
 export function exportReportAsMarkdown({
   graphData, metrics, snapshotMetrics, pendingChanges,
-  fiInterpretation, ocInterpretation, recommendations,
+  fiInterpretation, posInterpretation, balInterpretation, recommendations,
   filename = 'ona-report.md',
 }) {
   const now = new Date().toLocaleString()
   const fi = metrics?.frustrationIndex
-  const oc = metrics?.organizationalCost
+  const pos = metrics?.organizationalPositivity
+  const bal = metrics?.organizationalBalance
 
   const lines = [
     '# Organisational Network Analysis Report',
@@ -92,11 +93,8 @@ export function exportReportAsMarkdown({
     `| Metric | Value | Status |`,
     `|--------|-------|--------|`,
     `| Frustration Index | ${fi?.toFixed(3) ?? 'N/A'} | ${fi == null ? 'N/A' : fi <= 0.3 ? 'Healthy' : fi <= 0.6 ? 'Moderate' : 'Critical'} |`,
-    `| Organisational Cost | ${oc?.toFixed(3) ?? 'N/A'} | ${oc == null ? 'N/A' : oc <= 0.3 ? 'Efficient' : oc <= 0.6 ? 'Moderate' : 'Critical'} |`,
-    `| Network Density | ${metrics?.networkDensity?.toFixed(4) ?? 'N/A'} | — |`,
-    `| Signed Balance | ${metrics?.signedBalance?.toFixed(3) ?? 'N/A'} | — |`,
-    `| Avg Path Length | ${metrics?.avgPathLength?.toFixed(2) ?? 'N/A'} | — |`,
-    `| Clustering Coefficient | ${metrics?.clusteringCoefficient?.toFixed(3) ?? 'N/A'} | — |`,
+    `| Organizational Positivity | ${pos?.toFixed(3) ?? 'N/A'} | ${pos == null ? 'N/A' : pos >= 0.7 ? 'Strong' : pos >= 0.4 ? 'Moderate' : 'Weak'} |`,
+    `| Organizational Balance | ${bal?.toFixed(3) ?? 'N/A'} | ${bal == null ? 'N/A' : bal >= 0.7 ? 'High' : bal >= 0.4 ? 'Moderate' : 'Low'} |`,
     '',
     '---',
     '',
@@ -107,9 +105,8 @@ export function exportReportAsMarkdown({
       `|--------|--------|-------|--------|`,
       ...[
         ['Frustration Index', 'frustrationIndex'],
-        ['Organisational Cost', 'organizationalCost'],
-        ['Network Density', 'networkDensity'],
-        ['Signed Balance', 'signedBalance'],
+        ['Organizational Positivity', 'organizationalPositivity'],
+        ['Organizational Balance', 'organizationalBalance'],
       ].map(([label, key]) => {
         const b = snapshotMetrics[key]
         const a = metrics?.[key]
@@ -135,8 +132,11 @@ export function exportReportAsMarkdown({
     '### Frustration Index',
     fiInterpretation ?? '(Not available)',
     '',
-    '### Organisational Cost',
-    ocInterpretation ?? '(Not available)',
+    '### Organisational Positivity',
+    posInterpretation ?? '(Not available)',
+    '',
+    '### Organisational Balance',
+    balInterpretation ?? '(Not available)',
     '',
     '---',
     '',

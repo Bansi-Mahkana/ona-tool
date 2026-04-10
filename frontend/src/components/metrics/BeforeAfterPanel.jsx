@@ -11,9 +11,8 @@ export default function BeforeAfterPanel({ before, after, labels = {} }) {
 
   const METRICS = [
     { key: 'frustrationIndex', label: labels.frustrationIndex || 'Frustration Index', invertedScale: true },
-    { key: 'organizationalCost', label: labels.organizationalCost || 'Org Cost', invertedScale: true },
-    { key: 'networkDensity', label: labels.networkDensity || 'Density', invertedScale: false },
-    { key: 'signedBalance', label: labels.signedBalance || 'Signed Balance', invertedScale: false },
+    { key: 'organizationalPositivity', label: labels.organizationalPositivity || 'Org Positivity', invertedScale: false },
+    { key: 'organizationalBalance', label: labels.organizationalBalance || 'Org Balance', invertedScale: false },
   ]
 
   return (

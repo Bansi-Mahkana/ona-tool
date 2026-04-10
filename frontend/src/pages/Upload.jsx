@@ -6,8 +6,9 @@ import useNetworkStore from '../store/networkStore'
 import { parseCSV, buildGraphFromEdgeList, buildHierarchy, generateSampleCSV } from '../utils/csvParser'
 import { useNetworkData } from '../hooks/useNetworkData'
 import {
-  estimateFrustrationIndex, estimateOrganizationalCost,
-  computeDensity, countIsolated, computeSignedBalance
+  estimateFrustrationIndex, estimateOrganizationalPositivity,
+  estimateInternalPositivity, estimateOrganizationalBalance,
+  estimateInternalBalance
 } from '../utils/metricHelpers'
 
 const EXPECTED_COLUMNS = [
@@ -55,23 +56,21 @@ export default function UploadPage() {
       const hierarchyData = buildHierarchy(graphData.nodes)
 
       const fi = estimateFrustrationIndex(graphData.nodes, graphData.links)
-      const oc = estimateOrganizationalCost(graphData.nodes, graphData.links)
-      const density = computeDensity(graphData.nodes, graphData.links)
-      const isolated = countIsolated(graphData.nodes, graphData.links)
-      const signedBalance = computeSignedBalance(graphData.links)
+      const orgPos = estimateOrganizationalPositivity(graphData.links)
+      const intPos = estimateInternalPositivity(graphData.nodes, graphData.links)
+      const orgBal = estimateOrganizationalBalance(graphData.nodes, graphData.links)
+      const intBal = estimateInternalBalance(graphData.nodes, graphData.links)
 
       setRawData(data, file.name)
       setGraphData(graphData)
       setHierarchyData(hierarchyData)
       setMetrics({
         frustrationIndex: fi,
-        organizationalCost: oc,
-        networkDensity: density,
-        avgPathLength: null, // computed by backend
-        clusteringCoefficient: null,
-        bridgeCount: null,
-        isolatedNodes: isolated,
-        signedBalance,
+        organizationalPositivity: orgPos,
+        organizationalBalance: orgBal,
+        internalPositivity: intPos,
+        internalBalance: intBal,
+        degreeCentrality: null,
       })
       setUploadStatus('success')
 
@@ -322,8 +321,7 @@ export default function UploadPage() {
                 ⚠ NOTE
               </p>
               <p className="font-body" style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
-                Client-side metrics are quick estimates. For full algorithmic accuracy (frustration index via signed graph algorithms, 
-                org cost via betweenness centrality), ensure the backend API is running.
+                Client-side metrics are quick estimates. For full algorithmic accuracy, ensure the backend API is running.
               </p>
             </div>
           </div>

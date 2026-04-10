@@ -132,3 +132,95 @@ def find_unbalanced_triangles(G: nx.Graph) -> list:
             frustrated.append((u, v, w, neg_count))
 
     return frustrated
+
+
+def compute_organizational_positivity(G: nx.DiGraph) -> float:
+    """Ratio of positive edges to total edges in the whole graph."""
+    edges = list(G.edges(data=True))
+    total_edges = len(edges)
+    if total_edges == 0:
+        return 0.0
+    positive_edges = sum(1 for _, _, d in edges if d.get("sign") == 1)
+    return round(positive_edges / total_edges, 4)
+
+
+def compute_internal_positivity(G: nx.DiGraph) -> dict:
+    """Ratio of positive internal edges to total internal edges per department."""
+    internal = {}
+    total_internal = {}
+    positive_internal = {}
+
+    for u, v, d in G.edges(data=True):
+        dept_u = G.nodes[u].get("department", "Unknown")
+        dept_v = G.nodes[v].get("department", "Unknown")
+
+        if dept_u == dept_v:
+            total_internal[dept_u] = total_internal.get(dept_u, 0) + 1
+            if d.get("sign") == 1:
+                positive_internal[dept_u] = positive_internal.get(dept_u, 0) + 1
+
+    for dept, total in total_internal.items():
+        internal[dept] = round(positive_internal.get(dept, 0) / total, 4) if total > 0 else 0.0
+
+    for node, data in G.nodes(data=True):
+        dept = data.get("department", "Unknown")
+        if dept not in internal:
+            internal[dept] = 0.0
+
+    return internal
+
+
+def _get_balanced_triangles(G: nx.Graph, dept_filter=None):
+    UG = G.to_undirected() if G.is_directed() else G
+    total_triangles = 0
+    balanced_triangles = 0
+
+    for triangle in nx.enumerate_all_cliques(UG):
+        if len(triangle) != 3:
+            continue
+        u, v, w = triangle
+
+        if dept_filter is not None:
+            dept_u = G.nodes[u].get("department", "Unknown")
+            dept_v = G.nodes[v].get("department", "Unknown")
+            dept_w = G.nodes[w].get("department", "Unknown")
+            if dept_u != dept_filter or dept_v != dept_filter or dept_w != dept_filter:
+                continue
+
+        neg_count = 0
+        for a, b in [(u, v), (v, w), (u, w)]:
+            sign = 0
+            if G.has_edge(a, b):
+                sign = G[a][b].get("sign", 0)
+            elif G.has_edge(b, a):
+                sign = G[b][a].get("sign", 0)
+            if sign == -1:
+                neg_count += 1
+
+        total_triangles += 1
+        # Balanced if 0 or 2 negative edges
+        if neg_count == 0 or neg_count == 2:
+            balanced_triangles += 1
+
+    return total_triangles, balanced_triangles
+
+
+def compute_organizational_balance(G: nx.DiGraph) -> float:
+    """Ratio of balanced triangles to total triangles in the organization."""
+    total, balanced = _get_balanced_triangles(G)
+    if total == 0:
+        return 0.0
+    return round(balanced / total, 4)
+
+
+def compute_internal_balance(G: nx.DiGraph) -> dict:
+    """Ratio of balanced internal triangles to total internal triangles per department."""
+    internal = {}
+    departments = {data.get("department", "Unknown") for _, data in G.nodes(data=True)}
+    for dept in departments:
+        total, balanced = _get_balanced_triangles(G, dept_filter=dept)
+        if total == 0:
+            internal[dept] = 0.0
+        else:
+            internal[dept] = round(balanced / total, 4)
+    return internal

@@ -5,9 +5,14 @@ import networkx as nx
 
 from ..models.graph_models import GraphIn, MetricsOut
 from ..services.graph_builder import build_nx_graph
-from ..services.signed_network import annotate_signs, compute_signed_balance_ratio
+from ..services.signed_network import (
+    annotate_signs,
+    compute_organizational_positivity,
+    compute_internal_positivity,
+    compute_organizational_balance,
+    compute_internal_balance,
+)
 from ..services.frustration_index import compute_frustration_index, frustration_breakdown
-from ..services.organizational_cost import compute_organizational_cost, compute_cost_breakdown
 
 router = APIRouter(prefix="/metrics", tags=["metrics"])
 
@@ -97,40 +102,13 @@ async def upload_csv(file: UploadFile = File(...)):
 
         # Compute metrics
         fi = compute_frustration_index(G)
-        oc = compute_organizational_cost(G)
-        density = nx.density(G)
-        signed_balance = compute_signed_balance_ratio(G)
-
-        try:
-            clustering = round(nx.average_clustering(UG), 4)
-        except Exception:
-            clustering = 0.0
-
-        try:
-            bridge_count = len(list(nx.bridges(UG)))
-        except Exception:
-            bridge_count = 0
-
-        connected_set = {u for u, v in G.edges()} | {v for u, v in G.edges()}
-        isolated_count = len([n for n in G.nodes() if n not in connected_set])
-
-        try:
-            if nx.is_connected(UG):
-                apl = round(nx.average_shortest_path_length(UG), 4)
-            else:
-                largest_cc = max(nx.connected_components(UG), key=len)
-                sub = UG.subgraph(largest_cc)
-                apl = round(nx.average_shortest_path_length(sub), 4) if len(sub) > 1 else None
-        except Exception:
-            apl = None
+        
+        org_positivity = compute_organizational_positivity(G)
+        org_balance = compute_organizational_balance(G)
+        int_positivity = compute_internal_positivity(G)
+        int_balance = compute_internal_balance(G)
 
         fi_detail = frustration_breakdown(G)
-        oc_detail = compute_cost_breakdown(G)
-
-        try:
-            bc = {k: round(v, 4) for k, v in nx.betweenness_centrality(UG, normalized=True).items()}
-        except Exception:
-            bc = {}
 
         try:
             dc = {k: round(v, 4) for k, v in nx.degree_centrality(G).items()}
@@ -141,19 +119,14 @@ async def upload_csv(file: UploadFile = File(...)):
             "graph": {"nodes": nodes, "links": edges},
             "metrics": {
                 "frustration_index": fi,
-                "organizational_cost": oc,
-                "network_density": round(density, 4),
-                "avg_path_length": apl,
-                "clustering_coefficient": clustering,
-                "bridge_count": bridge_count,
-                "isolated_nodes": isolated_count,
-                "signed_balance": signed_balance,
+                "organizational_positivity": org_positivity,
+                "organizational_balance": org_balance,
+                "internal_positivity": int_positivity,
+                "internal_balance": int_balance,
                 "degree_centrality": dc,
-                "betweenness_centrality": bc,
             },
             "details": {
                 "frustration": fi_detail,
-                "cost": oc_detail,
             },
         }
 

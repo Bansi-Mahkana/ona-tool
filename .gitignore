@@ -21,6 +21,5 @@ node_modules/
 __pycache__/
 .env
 
-
-
+.vscode/
 tmp_replace.cjs

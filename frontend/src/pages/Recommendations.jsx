@@ -5,7 +5,7 @@ import useNetworkStore from '../store/networkStore'
 import MetricGauge from '../components/metrics/MetricGauge'
 import BeforeAfterPanel from '../components/metrics/BeforeAfterPanel'
 import RecommendationPanel from '../components/recommendations/RecommendationPanel'
-import { interpretFrustrationIndex, interpretOrganizationalCost } from '../utils/metricHelpers'
+import { interpretFrustrationIndex, interpretPositivity, interpretBalance } from '../utils/metricHelpers'
 import { exportReportAsMarkdown, exportGraphAsJSON } from '../utils/exportUtils'
 import { useNetworkData } from '../hooks/useNetworkData'
 
@@ -19,7 +19,8 @@ export default function Recommendations() {
 
   const hasChanges = snapshotMetrics !== null
   const fiInterp = interpretFrustrationIndex(metrics.frustrationIndex)
-  const ocInterp = interpretOrganizationalCost(metrics.organizationalCost)
+  const posInterp = interpretPositivity(metrics.organizationalPositivity)
+  const balInterp = interpretBalance(metrics.organizationalBalance)
 
   const loadBackendRecs = async () => {
     setLoadingRecs(true)
@@ -40,7 +41,8 @@ export default function Recommendations() {
       snapshotMetrics,
       pendingChanges,
       fiInterpretation: fiInterp,
-      ocInterpretation: ocInterp,
+      posInterpretation: posInterp,
+      balInterpretation: balInterp,
       recommendations: backendRecs?.recommendations,
     })
   }
@@ -121,9 +123,8 @@ export default function Recommendations() {
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16 }}>
                   {[
                     { key: 'frustrationIndex', label: 'Frustration Index', invertedScale: true },
-                    { key: 'organizationalCost', label: 'Org Cost', invertedScale: true },
-                    { key: 'networkDensity', label: 'Density', invertedScale: false },
-                    { key: 'signedBalance', label: 'Signed Balance', invertedScale: false },
+                    { key: 'organizationalPositivity', label: 'Org Positivity', invertedScale: false },
+                    { key: 'organizationalBalance', label: 'Org Balance', invertedScale: false },
                   ].map((m) => (
                     <div key={m.key} style={{ display: 'flex', justifyContent: 'center' }}>
                       <MetricGauge value={metrics[m.key]} label={m.label} invertedScale={m.invertedScale} size={100} />

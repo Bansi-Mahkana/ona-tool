@@ -22,16 +22,11 @@ class GraphIn(BaseModel):
 
 class MetricsOut(BaseModel):
     frustration_index: float
-    organizational_cost: float
-    network_density: float
-    avg_path_length: Optional[float]
-    clustering_coefficient: float
-    bridge_count: int
-    isolated_nodes: int
-    signed_balance: Optional[float]
+    organizational_positivity: float
+    organizational_balance: float
+    internal_positivity: Dict[str, float]
+    internal_balance: Dict[str, float]
     degree_centrality: Dict[str, float]
-    betweenness_centrality: Dict[str, float]
-    eigenvector_centrality: Dict[str, float]
 
 class RecommendationOut(BaseModel):
     priority: str          # HIGH | MEDIUM | LOW

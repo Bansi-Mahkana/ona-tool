@@ -11,10 +11,10 @@ import { useEffect, useRef } from 'react'
 import useNetworkStore from '../store/networkStore'
 import {
   estimateFrustrationIndex,
-  estimateOrganizationalCost,
-  computeDensity,
-  countIsolated,
-  computeSignedBalance,
+  estimateOrganizationalPositivity,
+  estimateInternalPositivity,
+  estimateOrganizationalBalance,
+  estimateInternalBalance,
 } from '../utils/metricHelpers'
 
 const API_BASE = '/api'
@@ -26,18 +26,24 @@ export function useMetrics() {
   useEffect(() => {
     if (!graphData) return
 
-    // Client-side instant update
-    const { nodes, links } = graphData
-    const fi = estimateFrustrationIndex(nodes, links)
-    const oc = estimateOrganizationalCost(nodes, links)
-    const density = computeDensity(nodes, links)
-    const isolated = countIsolated(nodes, links)
-    const signedBalance = computeSignedBalance(links)
-
-    setMetrics({ frustrationIndex: fi, organizationalCost: oc, networkDensity: density, isolatedNodes: isolated, signedBalance })
-
     // Debounced backend re-computation (only when changes exist)
     if (pendingChanges.length === 0) return
+
+    // Client-side instant update for pending changes
+    const { nodes, links } = graphData
+    const fi = estimateFrustrationIndex(nodes, links)
+    const orgPos = estimateOrganizationalPositivity(links)
+    const intPos = estimateInternalPositivity(nodes, links)
+    const orgBal = estimateOrganizationalBalance(nodes, links)
+    const intBal = estimateInternalBalance(nodes, links)
+
+    setMetrics({
+      frustrationIndex: fi,
+      organizationalPositivity: orgPos,
+      organizationalBalance: orgBal,
+      internalPositivity: intPos,
+      internalBalance: intBal,
+    })
 
     clearTimeout(debounceRef.current)
     debounceRef.current = setTimeout(async () => {
@@ -52,13 +58,11 @@ export function useMetrics() {
         const data = await res.json()
         setMetrics({
           frustrationIndex: data.frustration_index,
-          organizationalCost: data.organizational_cost,
-          networkDensity: data.network_density,
-          avgPathLength: data.avg_path_length,
-          clusteringCoefficient: data.clustering_coefficient,
-          bridgeCount: data.bridge_count,
-          isolatedNodes: data.isolated_nodes,
-          signedBalance: data.signed_balance,
+          organizationalPositivity: data.organizational_positivity,
+          organizationalBalance: data.organizational_balance,
+          internalPositivity: data.internal_positivity,
+          internalBalance: data.internal_balance,
+          degreeCentrality: data.degree_centrality,
         })
       } catch {
         // Backend offline — client estimates already set above

@@ -1,6 +1,6 @@
 import { Lightbulb, ArrowRight, Users, GitBranch, Zap } from 'lucide-react'
 import useNetworkStore from '../../store/networkStore'
-import { interpretFrustrationIndex, interpretOrganizationalCost, interpretChange } from '../../utils/metricHelpers'
+import { interpretFrustrationIndex, interpretPositivity, interpretBalance, interpretChange } from '../../utils/metricHelpers'
 
 /**
  * Generates algorithmic recommendations based on current metrics.
@@ -23,50 +23,26 @@ function generateRecommendations(metrics, graphData) {
     })
   }
 
-  if (metrics.organizationalCost > 0.5) {
+  if (metrics.organizationalPositivity !== null && metrics.organizationalPositivity < 0.4) {
     recs.push({
       icon: Users,
       priority: 'HIGH',
       color: '#f5a623',
-      title: 'Reduce Communication Bottlenecks',
-      action: 'High-degree hub nodes are creating single points of failure. Redistribute responsibilities by creating direct peer connections between teams that currently communicate only through managers.',
-      metric: 'Organisational Cost',
-      expectedDelta: -0.15,
+      title: 'Increase Positivity',
+      action: 'The network lacks strong positive ties. Encourage more team-building activities and collaborative projects to foster better relationships.',
+      metric: 'Organizational Positivity',
+      expectedDelta: 0.15,
     })
   }
 
-  if (metrics.isolatedNodes > 0) {
-    recs.push({
-      icon: Users,
-      priority: 'MEDIUM',
-      color: '#f5a623',
-      title: 'Integrate Isolated Employees',
-      action: `${metrics.isolatedNodes} isolated node(s) found. Assign these individuals to cross-functional project teams to build weak ties and increase their network embeddedness.`,
-      metric: 'Network Density',
-      expectedDelta: 0.08,
-    })
-  }
-
-  if (metrics.networkDensity < 0.1) {
-    recs.push({
-      icon: Zap,
-      priority: 'MEDIUM',
-      color: '#4fc3f7',
-      title: 'Increase Network Density',
-      action: 'Network density is very low. Create intentional collaboration channels — pair programming, rotating stand-ups, or cross-department taskforces — to build more ties.',
-      metric: 'Network Density',
-      expectedDelta: 0.06,
-    })
-  }
-
-  if (metrics.signedBalance !== null && metrics.signedBalance < 0.6) {
+  if (metrics.organizationalBalance !== null && metrics.organizationalBalance < 0.6) {
     recs.push({
       icon: GitBranch,
       priority: 'MEDIUM',
       color: '#a78bfa',
-      title: 'Improve Signed Balance',
-      action: 'The network has poor structural balance per Heider\'s theory. Focus on converting ambivalent relationships (sign=0) to positive ones through mentoring programmes and shared goal alignment.',
-      metric: 'Signed Balance',
+      title: 'Improve Structural Balance',
+      action: 'The network has poor structural balance per Heider\'s theory. Focus on resolving tensions and converting ambivalent relationships to positive ones.',
+      metric: 'Organizational Balance',
       expectedDelta: 0.1,
     })
   }
@@ -94,9 +70,13 @@ export default function RecommendationPanel({ compact = false }) {
     ? interpretChange(snapshotMetrics.frustrationIndex, metrics.frustrationIndex, 'frustrationIndex')
     : interpretFrustrationIndex(metrics.frustrationIndex)
 
-  const ocInterp = interpretationMode === 'after' && snapshotMetrics
-    ? interpretChange(snapshotMetrics.organizationalCost, metrics.organizationalCost, 'organizationalCost')
-    : interpretOrganizationalCost(metrics.organizationalCost)
+  const posInterp = interpretationMode === 'after' && snapshotMetrics
+    ? interpretChange(snapshotMetrics.organizationalPositivity, metrics.organizationalPositivity, 'organizationalPositivity')
+    : interpretPositivity(metrics.organizationalPositivity)
+
+  const balInterp = interpretationMode === 'after' && snapshotMetrics
+    ? interpretChange(snapshotMetrics.organizationalBalance, metrics.organizationalBalance, 'organizationalBalance')
+    : interpretBalance(metrics.organizationalBalance)
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -163,13 +143,24 @@ export default function RecommendationPanel({ compact = false }) {
           </div>
         )}
 
-        {ocInterp && (
-          <div className={interpretationMode === 'after' ? 'interpretation-after' : 'interpretation-before'}>
+        {posInterp && (
+          <div className={interpretationMode === 'after' ? 'interpretation-after' : 'interpretation-before'} style={{ marginBottom: 12 }}>
             <p style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.63rem', color: 'var(--text-muted)', marginBottom: 4, letterSpacing: '0.06em' }}>
-              ORGANISATIONAL COST
+              ORGANISATIONAL POSITIVITY
             </p>
             <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '0.76rem', color: 'var(--text-secondary)', lineHeight: 1.65 }}>
-              {ocInterp}
+              {posInterp}
+            </p>
+          </div>
+        )}
+
+        {balInterp && (
+          <div className={interpretationMode === 'after' ? 'interpretation-after' : 'interpretation-before'}>
+            <p style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.63rem', color: 'var(--text-muted)', marginBottom: 4, letterSpacing: '0.06em' }}>
+              ORGANISATIONAL BALANCE
+            </p>
+            <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '0.76rem', color: 'var(--text-secondary)', lineHeight: 1.65 }}>
+              {balInterp}
             </p>
           </div>
         )}

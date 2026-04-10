@@ -59,16 +59,11 @@ export function useNetworkData() {
       if (data.metrics) {
         setMetrics({
           frustrationIndex: data.metrics.frustration_index,
-          organizationalCost: data.metrics.organizational_cost,
-          networkDensity: data.metrics.network_density,
-          avgPathLength: data.metrics.avg_path_length,
-          clusteringCoefficient: data.metrics.clustering_coefficient,
-          bridgeCount: data.metrics.bridge_count,
-          isolatedNodes: data.metrics.isolated_nodes,
-          signedBalance: data.metrics.signed_balance,
-          // Also store centrality data
+          organizationalPositivity: data.metrics.organizational_positivity,
+          organizationalBalance: data.metrics.organizational_balance,
+          internalPositivity: data.metrics.internal_positivity,
+          internalBalance: data.metrics.internal_balance,
           degreeCentrality: data.metrics.degree_centrality,
-          betweennessCentrality: data.metrics.betweenness_centrality,
         })
       }
 
