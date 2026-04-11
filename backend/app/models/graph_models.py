@@ -20,12 +20,18 @@ class GraphIn(BaseModel):
     nodes: List[NodeIn]
     links: List[EdgeIn]
 
+class TieredMetrics(BaseModel):
+    positivity: Dict[str, float]
+    balance: Dict[str, float]
+
 class MetricsOut(BaseModel):
     frustration_index: float
     organizational_positivity: float
     organizational_balance: float
-    internal_positivity: Dict[str, float]
-    internal_balance: Dict[str, float]
+    # Hierarchical tiers
+    executive: TieredMetrics
+    division: TieredMetrics
+    group: TieredMetrics
     degree_centrality: Dict[str, float]
 
 class RecommendationOut(BaseModel):

@@ -19,8 +19,9 @@ const useNetworkStore = create((set, get) => ({
     frustrationIndex: null,       // 0-1
     organizationalPositivity: null,
     organizationalBalance: null,
-    internalPositivity: null,     // { deptA: 0.5, deptB: ... }
-    internalBalance: null,        // { deptA: 0.2, deptB: ... }
+    executive: { positivity: {}, balance: {} },
+    division: { positivity: {}, balance: {} },
+    group: { positivity: {}, balance: {} },
     degreeCentrality: null,       // { nodeA: 0.1, nodeB: ... }
   },
 
@@ -115,8 +116,9 @@ const useNetworkStore = create((set, get) => ({
         frustrationIndex: null,
         organizationalPositivity: null,
         organizationalBalance: null,
-        internalPositivity: null,
-        internalBalance: null,
+        executive: { positivity: {}, balance: {} },
+        division: { positivity: {}, balance: {} },
+        group: { positivity: {}, balance: {} },
         degreeCentrality: null,
       },
       snapshotMetrics: null,

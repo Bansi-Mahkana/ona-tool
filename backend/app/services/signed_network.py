@@ -204,7 +204,6 @@ def _get_balanced_triangles(G: nx.Graph, dept_filter=None):
 
     return total_triangles, balanced_triangles
 
-
 def compute_organizational_balance(G: nx.DiGraph) -> float:
     """Ratio of balanced triangles to total triangles in the organization."""
     total, balanced = _get_balanced_triangles(G)
@@ -213,14 +212,61 @@ def compute_organizational_balance(G: nx.DiGraph) -> float:
     return round(balanced / total, 4)
 
 
-def compute_internal_balance(G: nx.DiGraph) -> dict:
-    """Ratio of balanced internal triangles to total internal triangles per department."""
-    internal = {}
-    departments = {data.get("department", "Unknown") for _, data in G.nodes(data=True)}
-    for dept in departments:
-        total, balanced = _get_balanced_triangles(G, dept_filter=dept)
-        if total == 0:
-            internal[dept] = 0.0
-        else:
-            internal[dept] = round(balanced / total, 4)
-    return internal
+def compute_hierarchical_metrics(G: nx.DiGraph):
+    """
+    Computes Positivity and Balance at 3 hierarchical levels:
+    - Executive (e.g. 0.1)
+    - Division  (e.g. 0.1.1)
+    - Group     (e.g. 0.1.1.1)
+    """
+    results = {
+        "executive": {"positivity": {}, "balance": {}},
+        "division":  {"positivity": {}, "balance": {}},
+        "group":     {"positivity": {}, "balance": {}}
+    }
+    
+    # Identify prefixes at each level
+    execs = set()
+    divs = set()
+    groups = set()
+    
+    for n in G.nodes():
+        parts = str(n).split('.')
+        if len(parts) >= 2: execs.add('.'.join(parts[:2]))
+        if len(parts) >= 3: divs.add('.'.join(parts[:3]))
+        if len(parts) >= 4: groups.add('.'.join(parts[:4]))
+        
+    # Helper to compute for a prefix
+    def _get_metrics_for_prefix(prefix: str):
+        # Subgraph where BOTH nodes start with this prefix
+        sub_nodes = [n for n in G.nodes() if str(n).startswith(prefix + '.') or str(n) == prefix]
+        S = G.subgraph(sub_nodes)
+        
+        # Positivity
+        edges = list(S.edges(data=True))
+        pos = sum(1 for _, _, d in edges if d.get("sign") == 1)
+        total_e = len(edges)
+        positivity = round(pos / total_e, 4) if total_e > 0 else 0.0
+        
+        # Balance
+        total_t, bal_t = _get_balanced_triangles(S)
+        balance = round(bal_t / total_t, 4) if total_t > 0 else 0.0
+        
+        return positivity, balance
+
+    for p in execs:
+        p_val, b_val = _get_metrics_for_prefix(p)
+        results["executive"]["positivity"][p] = p_val
+        results["executive"]["balance"][p] = b_val
+        
+    for p in divs:
+        p_val, b_val = _get_metrics_for_prefix(p)
+        results["division"]["positivity"][p] = p_val
+        results["division"]["balance"][p] = b_val
+        
+    for p in groups:
+        p_val, b_val = _get_metrics_for_prefix(p)
+        results["group"]["positivity"][p] = p_val
+        results["group"]["balance"][p] = b_val
+        
+    return results

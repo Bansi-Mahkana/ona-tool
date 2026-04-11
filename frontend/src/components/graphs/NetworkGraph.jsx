@@ -15,12 +15,19 @@ export default function NetworkGraph({ onNodeClick, onEdgeClick, width = 700, he
   const zoomRef = useRef(null)
   const svgSelRef = useRef(null)
 
-  const { graphData } = useNetworkStore()
+  const { 
+    graphData, setGraphData, 
+    selectedNode, setSelectedNode, 
+    selectedEdge, setSelectedEdge,
+    metrics
+  } = useNetworkStore()
 
   const [activeDepts, setActiveDepts] = useState(new Set())
   const [showPositive, setShowPositive] = useState(true)
   const [showNegative, setShowNegative] = useState(true)
   const [showNeutral, setShowNeutral] = useState(true)
+  const [isPyramidMode, setIsPyramidMode] = useState(false)
+  const [isCentralityScaled, setIsCentralityScaled] = useState(false)
 
   // Sync activeDepts when new data arrives
   useEffect(() => {
@@ -120,26 +127,51 @@ export default function NetworkGraph({ onNodeClick, onEdgeClick, width = 700, he
         .distance((l) => {
           const s = nodeById[l.source?.id || l.source]
           const t = nodeById[l.target?.id || l.target]
-          return s?.department === t?.department ? 65 : 115
+          return s?.department === t?.department ? 50 : 100
         }).strength(0.5))
-      .force('charge', d3.forceManyBody().strength(-200))
+      .force('charge', d3.forceManyBody().strength(-300))
       .force('center', d3.forceCenter(width / 2, height / 2))
-      .force('collision', d3.forceCollide(22))
-      .force('x', d3.forceX(width / 2).strength(0.03))
-      .force('y', d3.forceY(height / 2).strength(0.03))
+      .force('collision', d3.forceCollide(25))
+      .force('x', d3.forceX(width / 2).strength(0.05))
+      .force('y', d3.forceY(height / 2).strength(0.05))
     simRef.current = sim
+
+    if (isPyramidMode) {
+      sim.stop()
+      // Calculate levels and positions
+      const nodesByLevel = {}
+      simNodes.forEach(n => {
+        // Safe level calculation (0.x.y.z -> levels 0, 1, 2, 3)
+        // Ensure lvl is never negative
+        const parts = n.id.split('.')
+        const lvl = Math.max(0, parts.length - 2)
+        if (!nodesByLevel[lvl]) nodesByLevel[lvl] = []
+        nodesByLevel[lvl].push(n)
+      })
+
+      const maxLevel = Math.max(...Object.keys(nodesByLevel).map(Number))
+      Object.entries(nodesByLevel).forEach(([lvl, lNodes]) => {
+        const levelY = (Number(lvl) / (maxLevel || 1)) * (height - 100) + 50
+        lNodes.sort((a,b) => a.id.localeCompare(b.id)).forEach((n, i) => {
+          n.x = (i + 0.5) * (width / (lNodes.length || 1))
+          n.y = levelY
+          n.fx = n.x
+          n.fy = n.y
+        })
+      })
+    }
 
     // Hull backgrounds (behind everything)
     const hullGroup = g.append('g')
 
     // Links
-    const link = g.append('g').selectAll('line')
-      .data(simLinks).join('line')
-      .attr('stroke', (d) => d.sign === 1 ? '#00d4a0' : d.sign === -1 ? '#ff4757' : 'rgba(79,195,247,0.45)')
-      .attr('stroke-width', (d) => Math.max(1, Math.sqrt(d.weight || 1) * 1.3))
-      .attr('stroke-dasharray', (d) => d.sign === -1 ? '6,4' : null)
+    const link = g.append('g').selectAll('path')
+      .data(simLinks).join('path')
+      .attr('stroke', (d) => d.sign === 1 ? '#00d4a0' : d.sign === -1 ? '#ff4757' : 'rgba(79,195,247,0.3)')
+      .attr('stroke-width', (d) => d.sign === -1 ? 2 : 1.2)
+      .attr('fill', 'none')
       .attr('marker-end', (d) => `url(#arrow-${d.sign === 1 ? 'pos' : d.sign === -1 ? 'neg' : 'neu'})`)
-      .attr('opacity', 0.7)
+      .attr('opacity', 0.6)
       .style('cursor', 'pointer')
       .on('click', (e, d) => { e.stopPropagation(); if (onEdgeClick) onEdgeClick(d) })
       .on('mouseover', (e, d) => {
@@ -167,13 +199,31 @@ export default function NetworkGraph({ onNodeClick, onEdgeClick, width = 700, he
     const node = g.append('g').selectAll('g')
       .data(simNodes).join('g')
       .style('cursor', 'pointer')
+      .style('opacity', (d) => {
+        if (!selectedNode) return 1
+        return (d.id === selectedNode.id || simLinks.some(l => {
+          const s = l.source?.id || l.source
+          const t = l.target?.id || l.target
+          return (s === d.id && t === selectedNode.id) || (t === d.id && s === selectedNode.id)
+        })) ? 1 : 0.15
+      })
+      .style('transition', 'opacity 0.3s ease')
       .call(
         d3.drag()
           .on('start', (e, d) => { if (!e.active) sim.alphaTarget(0.3).restart(); d.fx = d.x; d.fy = d.y })
           .on('drag', (e, d) => { d.fx = e.x; d.fy = e.y })
-          .on('end', (e, d) => { if (!e.active) sim.alphaTarget(0); d.fx = null; d.fy = null })
+          .on('end', (e, d) => { 
+            if (!e.active) sim.alphaTarget(0)
+            if (!isPyramidMode) {
+              d.fx = null; d.fy = null 
+            }
+          })
       )
-      .on('click', (e, d) => { e.stopPropagation(); if (onNodeClick) onNodeClick(d) })
+      .on('click', (e, d) => { 
+        e.stopPropagation(); 
+        setSelectedNode(d); 
+        if (onNodeClick) onNodeClick(d) 
+      })
       .on('mouseover', (e, d) => {
         const tip = tooltipRef.current
         if (!tip) return
@@ -194,10 +244,17 @@ export default function NetworkGraph({ onNodeClick, onEdgeClick, width = 700, he
       .on('mouseout', () => { if (tooltipRef.current) tooltipRef.current.style.display = 'none' })
 
     node.append('circle')
-      .attr('r', 13)
+      .attr('r', (d) => {
+        const base = 13
+        if (!isCentralityScaled || !metrics.degreeCentrality) return base
+        const score = metrics.degreeCentrality[d.id] || 0
+        return base + (score * 50)
+      })
       .attr('fill', (d) => `${colorByDept[d.department]}20`)
       .attr('stroke', (d) => colorByDept[d.department])
-      .attr('stroke-width', 2)
+      .attr('stroke-width', (d) => d.id === selectedNode?.id ? 4 : 2)
+      .style('filter', (d) => d.id === selectedNode?.id ? `drop-shadow(0 0 10px ${colorByDept[d.department]})` : 'none')
+      .style('transition', 'r 0.3s ease, stroke-width 0.2s')
 
     node.append('text')
       .text((d) => d.id.slice(0, 2).toUpperCase())
@@ -208,14 +265,29 @@ export default function NetworkGraph({ onNodeClick, onEdgeClick, width = 700, he
 
     node.append('text')
       .text((d) => d.id)
-      .attr('y', 22).attr('text-anchor', 'middle')
+      .attr('y', (d) => {
+        const base = 22
+        if (!isCentralityScaled || !metrics.degreeCentrality) return base
+        const score = metrics.degreeCentrality[d.id] || 0
+        return base + (score * 50) * 0.5
+      })
+      .attr('text-anchor', 'middle')
       .attr('fill', 'var(--text-secondary)').attr('font-family', "'DM Sans', sans-serif").attr('font-size', 9)
       .style('pointer-events', 'none')
+      .style('transition', 'y 0.3s ease')
 
     sim.on('tick', () => {
-      link
-        .attr('x1', (d) => d.source.x).attr('y1', (d) => d.source.y)
-        .attr('x2', (d) => d.target.x).attr('y2', (d) => d.target.y)
+      link.attr('d', (d) => {
+        const dx = d.target.x - d.source.x
+        const dy = d.target.y - d.source.y
+        const dr = Math.sqrt(dx * dx + dy * dy)
+        
+        // Curve negative edges, especially on same level
+        if (d.sign === -1) {
+          return `M${d.source.x},${d.source.y}A${dr},${dr} 0 0,1 ${d.target.x},${d.target.y}`
+        }
+        return `M${d.source.x},${d.source.y}L${d.target.x},${d.target.y}`
+      })
       node.attr('transform', (d) => `translate(${d.x},${d.y})`)
 
       hullGroup.selectAll('path').remove()
@@ -251,7 +323,7 @@ export default function NetworkGraph({ onNodeClick, onEdgeClick, width = 700, he
         .attr('font-family', "'DM Sans', sans-serif").attr('font-size', 10)
     })
 
-  }, [graphData, activeDepts, showPositive, showNegative, showNeutral, width, height, onNodeClick, onEdgeClick])
+  }, [graphData, activeDepts, showPositive, showNegative, showNeutral, width, height, onNodeClick, onEdgeClick, isPyramidMode, isCentralityScaled, selectedNode, metrics])
 
   useEffect(() => {
     render()
@@ -283,6 +355,10 @@ export default function NetworkGraph({ onNodeClick, onEdgeClick, width = 700, he
         showNegative={showNegative}
         showNeutral={showNeutral}
         onToggleSign={handleToggleSign}
+        isPyramidMode={isPyramidMode}
+        onTogglePyramid={() => setIsPyramidMode(!isPyramidMode)}
+        isCentralityScaled={isCentralityScaled}
+        onToggleCentrality={() => setIsCentralityScaled(!isCentralityScaled)}
       />
     </div>
   )

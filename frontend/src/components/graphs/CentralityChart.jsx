@@ -27,7 +27,7 @@ function CustomTooltip({ active, payload, label }) {
 }
 
 export default function CentralityChart({ metric = 'betweenness' }) {
-  const { graphData, metrics } = useNetworkStore()
+  const { graphData, metrics, setSelectedNode, setActiveTab } = useNetworkStore()
 
   const chartData = useMemo(() => {
     if (!graphData?.nodes) return []
@@ -90,7 +90,16 @@ export default function CentralityChart({ metric = 'betweenness' }) {
             domain={[0, maxVal * 1.15]}
           />
           <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(79,195,247,0.05)' }} />
-          <Bar dataKey={metric} name={metric === 'betweenness' ? 'Betweenness Centrality' : 'Degree Centrality'} radius={[3,3,0,0]}>
+          <Bar 
+            dataKey={metric} 
+            name={metric === 'betweenness' ? 'Betweenness Centrality' : 'Degree Centrality'} 
+            radius={[3,3,0,0]}
+            onClick={(data) => {
+              setSelectedNode(graphData.nodes.find(n => n.id === data.name));
+              setActiveTab('network');
+            }}
+            style={{ cursor: 'pointer' }}
+          >
             {chartData.map((entry, index) => (
               <Cell key={index} fill={DEPT_COLORS[entry.deptIdx % DEPT_COLORS.length]} fillOpacity={0.8} />
             ))}
@@ -101,11 +110,22 @@ export default function CentralityChart({ metric = 'betweenness' }) {
       {/* Top 3 highlight cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginTop: 16 }}>
         {chartData.slice(0, 3).map((d, i) => (
-          <div key={d.name} style={{
-            background: `${DEPT_COLORS[d.deptIdx % DEPT_COLORS.length]}08`,
-            border: `1px solid ${DEPT_COLORS[d.deptIdx % DEPT_COLORS.length]}25`,
-            borderRadius: 8, padding: '10px 14px',
-          }}>
+          <div 
+            key={d.name} 
+            onClick={() => {
+              setSelectedNode(graphData.nodes.find(n => n.id === d.name));
+              setActiveTab('network');
+            }}
+            style={{
+              background: `${DEPT_COLORS[d.deptIdx % DEPT_COLORS.length]}08`,
+              border: `1px solid ${DEPT_COLORS[d.deptIdx % DEPT_COLORS.length]}25`,
+              borderRadius: 8, padding: '10px 14px',
+              cursor: 'pointer',
+              transition: 'all 0.15s',
+            }}
+            onMouseEnter={e => e.currentTarget.style.background = `${DEPT_COLORS[d.deptIdx % DEPT_COLORS.length]}12`}
+            onMouseLeave={e => e.currentTarget.style.background = `${DEPT_COLORS[d.deptIdx % DEPT_COLORS.length]}08`}
+          >
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
               <span style={{
                 fontFamily: "'Space Mono', monospace", fontSize: '0.65rem',

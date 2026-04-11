@@ -45,7 +45,10 @@ export function buildGraphFromEdgeList(rows) {
 
     const sign = computeEdgeSign(q1, q2, q3, q4, weight)
 
-    links.push({ source: src, target: tgt, weight, sign, q1, q2, q3, q4 })
+    // Only include positive (+1) or negative (-1) edges; skip neutral (0)
+    if (sign !== 0) {
+      links.push({ source: src, target: tgt, weight, sign, q1, q2, q3, q4 })
+    }
   })
 
   return {
@@ -93,31 +96,200 @@ export function computeEdgeSign(q1, q2, q3, q4, weight = 1) {
  * Generate a sample Cross-Parker format CSV string for download/testing.
  */
 export function generateSampleCSV() {
-  const departments = ['Engineering', 'Marketing', 'Finance', 'HR', 'Product']
-  const names = [
-    'Alice', 'Bob', 'Carol', 'David', 'Eve',
-    'Frank', 'Grace', 'Henry', 'Iris', 'James',
-    'Karen', 'Leo', 'Maya', 'Noah', 'Olivia',
-  ]
+  const nodes = {} // map of id to { level, dept }
+  const edges = {} // map of "u|v" to { sign, weight }
 
-  const rows = ['source,target,weight,department_source,department_target,q1,q2,q3,q4']
-  const deptOf = {}
-  names.forEach((n) => {
-    deptOf[n] = departments[Math.floor(Math.random() * departments.length)]
+  // 1. CREATE HIERARCHY
+  const executives = ["0.1", "0.2", "0.3"]
+  executives.forEach(exec => {
+    nodes[exec] = { level: 0, dept: exec }
+    for (let d = 1; d <= 2; d++) {
+      const div = `${exec}.${d}`
+      nodes[div] = { level: 1, dept: exec }
+      for (let g = 1; g <= 2; g++) {
+        const grp = `${div}.${g}`
+        nodes[grp] = { level: 2, dept: exec }
+        for (let e = 1; e <= 3; e++) {
+          const emp = `${grp}.${e}`
+          nodes[emp] = { level: 3, dept: exec }
+        }
+      }
+    }
   })
 
-  // Generate ~40 edges
-  for (let i = 0; i < 45; i++) {
-    const src = names[Math.floor(Math.random() * names.length)]
-    let tgt = names[Math.floor(Math.random() * names.length)]
-    if (src === tgt) continue
-    const w = Math.floor(Math.random() * 5) + 1
-    const q1 = Math.floor(Math.random() * 6)
-    const q2 = Math.floor(Math.random() * 6)
-    const q3 = Math.floor(Math.random() * 7)
-    const q4 = Math.floor(Math.random() * 7)
-    rows.push(`${src},${tgt},${w},${deptOf[src]},${deptOf[tgt]},${q1},${q2},${q3},${q4}`)
+  const nodeList = Object.keys(nodes)
+
+  const addEdge = (u, v, sign, weight) => {
+    if (u === v) return
+    const key1 = `${u}|${v}`
+    const key2 = `${v}|${u}`
+    if (edges[key1] || edges[key2]) return // prevent duplicates
+    edges[key1] = { u, v, sign, weight }
   }
+
+  const hasEdge = (u, v) => !!(edges[`${u}|${v}`] || edges[`${v}|${u}`])
+
+  // 2. HIERARCHY EDGES (STRONG POSITIVE)
+  nodeList.forEach(node => {
+     const parts = node.split('.')
+     if (parts.length === 1 || (parts.length === 2 && parts[0] === '0')) return 
+     const parent = parts.slice(0, -1).join('.')
+     if (nodes[parent]) {
+       addEdge(parent, node, 1, 0.9)
+     }
+  })
+
+  // 2.1 FORCE EXECUTIVE CONNECTIVITY
+  const execNodes = nodeList.filter(n => nodes[n].level === 0)
+  for (let i = 0; i < execNodes.length; i++) {
+    for (let j = i + 1; j < execNodes.length; j++) {
+      addEdge(execNodes[i], execNodes[j], 1, 0.7 + Math.random() * 0.3)
+    }
+  }
+
+  // HELPERS
+  const getGroup = (n) => {
+    const parts = n.split('.')
+    return parts.length >= 3 ? parts.slice(0, 3).join('.') : null
+  }
+
+  // 3. EDGE VALIDATION
+  const validEdge = (u, v) => {
+    const lu = nodes[u].level, lv = nodes[v].level
+    const du = nodes[u].dept, dv = nodes[v].dept
+    const gap = Math.abs(lu - lv)
+
+    if (gap >= 3) return false // no CEO <-> employee edges
+    
+    let levelProb = 0.01
+    if (gap === 0) levelProb = 0.7
+    else if (gap === 1) levelProb = 0.5
+    else if (gap === 2) levelProb = 0.2
+
+    const deptProb = (du === dv) ? 0.7 : 0.3
+    return Math.random() < (levelProb * deptProb)
+  }
+
+  // 4. SIGN + WEIGHT LOGIC
+  const edgeProperties = (u, v) => {
+    const du = nodes[u].dept, dv = nodes[v].dept
+    const lu = nodes[u].level, lv = nodes[v].level
+    const gap = Math.abs(lu - lv)
+    const gu = getGroup(u), gv = getGroup(v)
+
+    let sign, weight
+    if (gu && gu === gv) {
+      sign = Math.random() < 0.3 ? -1 : 1
+      weight = 0.6 + Math.random() * 0.4
+    } else if (du === dv) {
+      sign = Math.random() < 0.2 ? -1 : 1
+      weight = 0.4 + Math.random() * 0.4
+    } else if (gap <= 1) {
+      sign = Math.random() < 0.08 ? -1 : 1
+      weight = 0.3 + Math.random() * 0.4
+    } else {
+      sign = Math.random() < 0.05 ? -1 : 1
+      weight = 0.1 + Math.random() * 0.4
+    }
+    return { sign, weight }
+  }
+
+  // 4.5 FIXED INTRA-GROUP LOGIC
+  nodeList.forEach(node => {
+    if (nodes[node].level === 2) {
+      const employees = nodeList.filter(n => nodes[n].level === 3 && getGroup(n) === node)
+      for (let i = 0; i < employees.length; i++) {
+        for (let j = i + 1; j < employees.length; j++) {
+          const u = employees[i], v = employees[j]
+          if (hasEdge(u, v)) continue
+          const props = edgeProperties(u, v)
+          addEdge(u, v, props.sign, props.weight)
+        }
+      }
+    }
+  })
+
+  // 5. ADD RANDOM EDGES
+  for (let i = 0; i < 170; i++) {
+    const u = nodeList[Math.floor(Math.random() * nodeList.length)]
+    const v = nodeList[Math.floor(Math.random() * nodeList.length)]
+    if (u === v) continue
+    if (hasEdge(u, v)) continue
+    if (!validEdge(u, v)) continue
+    const props = edgeProperties(u, v)
+    addEdge(u, v, props.sign, props.weight)
+  }
+
+  // 5.5 TRIADIC CLOSURE
+  for (let i = 0; i < 170; i++) {
+    const u = nodeList[Math.floor(Math.random() * nodeList.length)]
+    const neighbors = []
+    Object.values(edges).forEach(e => {
+      if (e.u === u) neighbors.push(e.v)
+      if (e.v === u) neighbors.push(e.u)
+    })
+
+    if (neighbors.length < 2) continue
+
+    const v = neighbors[Math.floor(Math.random() * neighbors.length)]
+    let w = neighbors[Math.floor(Math.random() * neighbors.length)]
+    
+    let tries = 0;
+    while (v === w && tries < 10) {
+      w = neighbors[Math.floor(Math.random() * neighbors.length)]
+      tries++;
+    }
+    if (v === w) continue
+
+    if (Math.abs(nodes[v].level - nodes[w].level) >= 2) continue
+    if (hasEdge(v, w)) continue
+
+    const sameLevel = nodes[v].level === nodes[w].level
+    const sameDept = nodes[v].dept === nodes[w].dept
+
+    let prob = 0.2
+    if (sameLevel) prob += 0.2
+    if (sameDept) prob += 0.2
+
+    if (Math.random() < prob) {
+      const props = edgeProperties(v, w)
+      if (!hasEdge(v, w)) {
+        addEdge(v, w, props.sign, props.weight)
+      }
+    }
+  }
+
+  // Helper to engineer Q answers that perfectly align to our sign logic
+  const generateQs = (sign) => {
+    let q1, q2, q3, q4;
+    while (true) {
+        q1 = Math.floor(Math.random() * 6) // 0-5
+        q2 = Math.floor(Math.random() * 6) // 0-5
+        q3 = Math.floor(Math.random() * 7) // 0-6
+        q4 = Math.floor(Math.random() * 7) // 0-6
+        
+        const normQ3 = (q3 / 6) * 5
+        const normQ4 = (q4 / 6) * 5
+        const avg = (q1 + q2 + normQ3 + normQ4) / 4
+        
+        if (sign === 1 && avg >= 3.5) break
+        if (sign === -1 && avg < 2.0 && avg >= 0) break // >0 avoids all 0 edge case
+        if (sign === 0 && avg >= 2.0 && avg < 3.5) break
+    }
+    return [q1, q2, q3, q4]
+  }
+
+  const rows = ['source,target,weight,department_source,department_target,q1,q2,q3,q4']
+
+  Object.values(edges).forEach(e => {
+    // scale weight up trivially to fit 1-5 scale often used
+    const w = ((e.weight * 4) + 1).toFixed(1)
+    const [q1, q2, q3, q4] = generateQs(e.sign)
+    // Using the GROUP (Level 2) as the primary department for metric calculations
+    const deptSrc = getGroup(e.u) || nodes[e.u].dept
+    const deptTgt = getGroup(e.v) || nodes[e.v].dept
+    rows.push(`${e.u},${e.v},${w},${deptSrc},${deptTgt},${q1},${q2},${q3},${q4}`)
+  })
 
   return rows.join('\n')
 }
@@ -126,20 +298,47 @@ export function generateSampleCSV() {
  * Build hierarchy data from nodes (group by department).
  */
 export function buildHierarchy(nodes) {
-  const deptMap = {}
-  nodes.forEach((n) => {
-    const dept = n.department || 'Unknown'
-    if (!deptMap[dept]) deptMap[dept] = []
-    deptMap[dept].push(n)
+  const root = { id: 'Organisation', name: 'Organisation', children: [] }
+  const nodePool = { 'Organisation': root }
+
+  // Sort nodes by ID length to process parents before children
+  const sortedNodes = [...nodes].sort((a, b) => a.id.length - b.id.length)
+
+  sortedNodes.forEach(node => {
+    const parts = node.id.split('.')
+    if (parts.length === 1 && node.id !== 'Organisation') {
+      // Top level nodes directly under ORG (unlikely in your setup but safe)
+      const n = { id: node.id, name: node.label || node.id, children: [] }
+      root.children.push(n)
+      nodePool[node.id] = n
+      return
+    }
+
+    // Identify the parent path
+    // For 0.1.1.1.2, parent is 0.1.1.1
+    const parentId = parts.slice(0, -1).join('.')
+    
+    // If parent doesn't exist in pool, we might need a placeholder or check if it's the root
+    let parent = nodePool[parentId]
+    
+    if (!parent) {
+      if (parts.length === 2 && (parts[0] === '0' || parts[0] === 'ORG')) {
+         parent = root
+      } else {
+        // Fallback for unexpected notation: put under root
+        parent = root
+      }
+    }
+
+    const newNode = { 
+      id: node.id, 
+      name: node.label || node.id, 
+      department: node.department,
+      children: [] 
+    }
+    parent.children.push(newNode)
+    nodePool[node.id] = newNode
   })
 
-  return {
-    id: 'Organisation',
-    name: 'Organisation',
-    children: Object.entries(deptMap).map(([dept, members]) => ({
-      id: dept,
-      name: dept,
-      children: members.map((m) => ({ id: m.id, name: m.label || m.id })),
-    })),
-  }
+  return root
 }

@@ -61,8 +61,9 @@ export function useNetworkData() {
           frustrationIndex: data.metrics.frustration_index,
           organizationalPositivity: data.metrics.organizational_positivity,
           organizationalBalance: data.metrics.organizational_balance,
-          internalPositivity: data.metrics.internal_positivity,
-          internalBalance: data.metrics.internal_balance,
+          executive: data.metrics.executive,
+          division: data.metrics.division,
+          group: data.metrics.group,
           degreeCentrality: data.metrics.degree_centrality,
         })
       }

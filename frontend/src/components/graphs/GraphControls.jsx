@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ZoomIn, ZoomOut, Maximize2, Filter, Eye, EyeOff } from 'lucide-react'
+import { ZoomIn, ZoomOut, Maximize2, Filter, Eye, EyeOff, GitBranch, Zap } from 'lucide-react'
 
 /**
  * GraphControls — toolbar for the network graph panel.
@@ -20,6 +20,10 @@ export default function GraphControls({
   showNegative = true,
   showNeutral = true,
   onToggleSign,
+  isPyramidMode = false,
+  onTogglePyramid,
+  isCentralityScaled = false,
+  onToggleCentrality,
 }) {
   const [filterOpen, setFilterOpen] = useState(false)
 
@@ -31,7 +35,6 @@ export default function GraphControls({
   const SIGN_FILTERS = [
     { key: 'positive', label: '+ Positive', color: '#00d4a0', active: showPositive },
     { key: 'negative', label: '− Negative', color: '#ff4757', active: showNegative },
-    { key: 'neutral',  label: '● Neutral',  color: '#4fc3f7', active: showNeutral },
   ]
 
   return (
@@ -65,6 +68,36 @@ export default function GraphControls({
             <Icon size={14} />
           </button>
         ))}
+        
+        {/* Pyramid Mode Toggle */}
+        <div style={{ height: 1, background: 'rgba(79,195,247,0.1)', margin: '4px 0' }} />
+        <button
+          title={isPyramidMode ? "Standard View" : "Pyramid Hierarchy View"}
+          onClick={onTogglePyramid}
+          style={{
+            background: isPyramidMode ? 'rgba(79,195,247,0.12)' : 'transparent',
+            border: 'none', cursor: 'pointer',
+            color: isPyramidMode ? '#4fc3f7' : 'var(--text-secondary)',
+            padding: '5px 7px', borderRadius: 5, lineHeight: 0,
+            transition: 'all 0.15s',
+          }}
+        >
+          <GitBranch size={14} />
+        </button>
+
+        <button
+          title={isCentralityScaled ? "Normal Sizes" : "Scale Nodes by Influence"}
+          onClick={onToggleCentrality}
+          style={{
+            background: isCentralityScaled ? 'rgba(245,166,35,0.12)' : 'transparent',
+            border: 'none', cursor: 'pointer',
+            color: isCentralityScaled ? '#f5a623' : 'var(--text-secondary)',
+            padding: '5px 7px', borderRadius: 5, lineHeight: 0,
+            transition: 'all 0.15s',
+          }}
+        >
+          <Zap size={14} />
+        </button>
       </div>
 
       {/* Filter toggle */}

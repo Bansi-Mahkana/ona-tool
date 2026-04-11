@@ -10,9 +10,8 @@ from ..services.graph_builder import build_nx_graph, build_undirected
 from ..services.signed_network import (
     annotate_signs,
     compute_organizational_positivity,
-    compute_internal_positivity,
     compute_organizational_balance,
-    compute_internal_balance,
+    compute_hierarchical_metrics,
 )
 from ..services.frustration_index import compute_frustration_index
 
@@ -39,8 +38,7 @@ async def compute_metrics(graph: GraphIn):
         # New Positivity and Balance metrics
         org_positivity = compute_organizational_positivity(G)
         org_balance = compute_organizational_balance(G)
-        int_positivity = compute_internal_positivity(G)
-        int_balance = compute_internal_balance(G)
+        h_metrics = compute_hierarchical_metrics(G)
 
         # ── Centrality measures ───────────────────────────────────────────
         try:
@@ -52,8 +50,9 @@ async def compute_metrics(graph: GraphIn):
             frustration_index=frustration_index,
             organizational_positivity=org_positivity,
             organizational_balance=org_balance,
-            internal_positivity=int_positivity,
-            internal_balance=int_balance,
+            executive=h_metrics["executive"],
+            division=h_metrics["division"],
+            group=h_metrics["group"],
             degree_centrality=degree_centrality,
         )
 

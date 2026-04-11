@@ -30,6 +30,10 @@ export default function Analysis() {
   const containerRef = useRef(null)
   const [dims, setDims] = useState({ width: 700, height: 480 })
   const [centralityMetric, setCentralityMetric] = useState('degree')
+  
+  // Tiered metrics view states
+  const [metricsViewMode, setMetricsViewMode] = useState('tabs') // 'tabs' | 'stacked'
+  const [activeMetricTier, setActiveMetricTier] = useState('executive') // 'executive' | 'division' | 'group'
 
   // Auto-recalculate metrics when graph changes
   useMetrics()
@@ -302,49 +306,114 @@ export default function Analysis() {
                 )
               })}
 
-              {/* Department level internal metrics */}
+              {/* Hierarchical Internal Metrics */}
               <div className="card p-5" style={{ gridColumn: '1 / -1' }}>
-                <p style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.65rem', color: '#f5a623', letterSpacing: '0.1em', marginBottom: 14 }}>
-                  DEPARTMENT-LEVEL INTERNAL METRICS
-                </p>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+                  <p style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.65rem', color: '#f5a623', letterSpacing: '0.1em', margin: 0 }}>
+                    HIERARCHICAL INTERNAL METRICS
+                  </p>
                   
-                  {/* Internal Positivity */}
-                  <div>
-                    <h4 style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.65rem', color: 'var(--text-primary)', marginBottom: 10 }}>INTERNAL POSITIVITY</h4>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                      {metrics.internalPositivity && Object.entries(metrics.internalPositivity).map(([dept, val]) => (
-                        <div key={dept} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                          <div style={{ width: 60, fontFamily: "'JetBrains Mono', monospace", fontSize: '0.6rem', color: 'var(--text-muted)' }}>{dept}</div>
-                          <div style={{ flex: 1, height: 6, background: 'var(--bg-secondary)', borderRadius: 3, overflow: 'hidden' }}>
-                            <div style={{ width: `${(val ?? 0) * 100}%`, height: '100%', background: '#4fc3f7', transition: 'width 0.3s' }} />
+                  {/* View Mode Toggle */}
+                  <div style={{ display: 'flex', background: 'var(--bg-secondary)', padding: 3, borderRadius: 6, gap: 3 }}>
+                    {['tabs', 'stacked'].map(mode => (
+                      <button 
+                        key={mode} 
+                        onClick={() => setMetricsViewMode(mode)}
+                        style={{
+                          padding: '3px 10px', fontSize: '0.58rem', border: 'none', borderRadius: 4, cursor: 'pointer',
+                          background: metricsViewMode === mode ? 'rgba(79,195,247,0.15)' : 'transparent',
+                          color: metricsViewMode === mode ? '#4fc3f7' : 'var(--text-muted)',
+                          fontFamily: "'Space Mono', monospace"
+                        }}
+                      >
+                        {mode.toUpperCase()}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Tier Switcher (only in Tabs mode) */}
+                {metricsViewMode === 'tabs' && (
+                  <div style={{ display: 'flex', gap: 8, marginBottom: 20, borderBottom: '1px solid var(--border)', paddingBottom: 10 }}>
+                    {['executive', 'division', 'group'].map(tier => (
+                      <button 
+                        key={tier} 
+                        onClick={() => setActiveMetricTier(tier)}
+                        style={{
+                          padding: '6px 16px', borderRadius: 8, border: 'none', cursor: 'pointer',
+                          background: activeMetricTier === tier ? '#4fc3f7' : 'transparent',
+                          color: activeMetricTier === tier ? '#0d1117' : 'var(--text-muted)',
+                          fontFamily: "'Space Mono', monospace", fontSize: '0.62rem', fontWeight: 600,
+                          transition: 'all 0.2s'
+                        }}
+                      >
+                        {tier.toUpperCase()} LEVEL
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 40 }}>
+                  {['executive', 'division', 'group']
+                    .filter(tier => metricsViewMode === 'stacked' || activeMetricTier === tier)
+                    .map(tier => (
+                      <div key={tier} style={{ 
+                        border: metricsViewMode === 'stacked' ? '1px solid rgba(79,195,247,0.05)' : 'none', 
+                        padding: metricsViewMode === 'stacked' ? '15px' : '0',
+                        borderRadius: 12,
+                        background: metricsViewMode === 'stacked' ? 'rgba(13,31,51,0.2)' : 'transparent'
+                      }}>
+                        <h3 style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.72rem', color: '#4fc3f7', marginBottom: 15, textTransform: 'uppercase' }}>
+                          {tier} Level View
+                        </h3>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 30 }}>
+                          
+                          {/* Positivity Column */}
+                          <div>
+                            <h4 style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.6rem', color: 'var(--text-muted)', marginBottom: 10 }}>POSITIVITY</h4>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                              {Object.entries(metrics[tier]?.positivity || {}).length > 0 ? (
+                                Object.entries(metrics[tier].positivity).map(([id, val]) => (
+                                  <div key={id} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                    <div title={id} style={{ width: 80, fontFamily: "'JetBrains Mono', monospace", fontSize: '0.62rem', color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{id}</div>
+                                    <div style={{ flex: 1, height: 6, background: 'var(--bg-secondary)', borderRadius: 3, overflow: 'hidden' }}>
+                                      <div style={{ width: `${(val ?? 0) * 100}%`, height: '100%', background: '#00d4a0', transition: 'width 0.4s ease-out' }} />
+                                    </div>
+                                    <div style={{ width: 40, fontFamily: "'JetBrains Mono', monospace", fontSize: '0.62rem', color: '#00d4a0', textAlign: 'right', fontWeight: 600 }}>
+                                      {val !== null ? (val * 100).toFixed(1) + '%' : '- %'}
+                                    </div>
+                                  </div>
+                                ))
+                              ) : (
+                                <p style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>No data</p>
+                              )}
+                            </div>
                           </div>
-                          <div style={{ width: 30, fontFamily: "'JetBrains Mono', monospace", fontSize: '0.6rem', color: 'var(--text-primary)', textAlign: 'right' }}>
-                            {val !== null ? val.toFixed(2) : '-'}
+
+                          {/* Balance Column */}
+                          <div>
+                            <h4 style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.6rem', color: 'var(--text-muted)', marginBottom: 10 }}>BALANCE</h4>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                              {Object.entries(metrics[tier]?.balance || {}).length > 0 ? (
+                                Object.entries(metrics[tier].balance).map(([id, val]) => (
+                                  <div key={id} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                    <div title={id} style={{ width: 80, fontFamily: "'JetBrains Mono', monospace", fontSize: '0.62rem', color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{id}</div>
+                                    <div style={{ flex: 1, height: 6, background: 'var(--bg-secondary)', borderRadius: 3, overflow: 'hidden' }}>
+                                      <div style={{ width: `${(val ?? 0) * 100}%`, height: '100%', background: '#a78bfa', transition: 'width 0.4s ease-out' }} />
+                                    </div>
+                                    <div style={{ width: 40, fontFamily: "'JetBrains Mono', monospace", fontSize: '0.62rem', color: '#a78bfa', textAlign: 'right', fontWeight: 600 }}>
+                                      {val !== null ? (val * 100).toFixed(1) + '%' : '- %'}
+                                    </div>
+                                  </div>
+                                ))
+                              ) : (
+                                <p style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>No data</p>
+                              )}
+                            </div>
                           </div>
                         </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Internal Balance */}
-                  <div>
-                    <h4 style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.65rem', color: 'var(--text-primary)', marginBottom: 10 }}>INTERNAL BALANCE</h4>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                      {metrics.internalBalance && Object.entries(metrics.internalBalance).map(([dept, val]) => (
-                        <div key={dept} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                          <div style={{ width: 60, fontFamily: "'JetBrains Mono', monospace", fontSize: '0.6rem', color: 'var(--text-muted)' }}>{dept}</div>
-                          <div style={{ flex: 1, height: 6, background: 'var(--bg-secondary)', borderRadius: 3, overflow: 'hidden' }}>
-                            <div style={{ width: `${(val ?? 0) * 100}%`, height: '100%', background: '#a78bfa', transition: 'width 0.3s' }} />
-                          </div>
-                          <div style={{ width: 30, fontFamily: "'JetBrains Mono', monospace", fontSize: '0.6rem', color: 'var(--text-primary)', textAlign: 'right' }}>
-                            {val !== null ? val.toFixed(2) : '-'}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
+                      </div>
+                    ))}
                 </div>
               </div>
 

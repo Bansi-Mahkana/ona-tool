@@ -41,8 +41,9 @@ export function useMetrics() {
       frustrationIndex: fi,
       organizationalPositivity: orgPos,
       organizationalBalance: orgBal,
-      internalPositivity: intPos,
-      internalBalance: intBal,
+      executive: { positivity: {}, balance: {} }, // Estimates not implemented for tiers yet
+      division: { positivity: {}, balance: {} },
+      group: { positivity: intPos, balance: intBal },
     })
 
     clearTimeout(debounceRef.current)
@@ -60,8 +61,9 @@ export function useMetrics() {
           frustrationIndex: data.frustration_index,
           organizationalPositivity: data.organizational_positivity,
           organizationalBalance: data.organizational_balance,
-          internalPositivity: data.internal_positivity,
-          internalBalance: data.internal_balance,
+          executive: data.executive,
+          division: data.division,
+          group: data.group,
           degreeCentrality: data.degree_centrality,
         })
       } catch {
