@@ -1,4 +1,4 @@
-# ONA Tool — Organizational Network Analysis
+# Nexus - ONA (Organizational Network Analysis) Tool
 
 An interactive web application for analysing, visualising, and optimising
 organizational networks. 
