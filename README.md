@@ -1,19 +1,18 @@
-# ONA Tool — Organisational Network Analysis
+# Nexus - ONA (Organizational Network Analysis) Tool
 
 An interactive web application for analysing, visualising, and optimising
-organisational networks. Built for the **Network Science** course.
+organizational networks. 
 
 ## Features
 
-- **Interactive signed network graph** — D3 force-directed, with positive/negative edge colours (neutral edges are filtered)
-- **Hierarchical org view** — department-grouped tree layout with level-based weighting
-- **Frustration Index (0–1)** — measures structural imbalance via Heider's balance theory
-- **Weighted Organisational Negativity (0–1)** — measures hierarchical risk by weighting negative interactions at higher levels
-- **Organisational Cost (0–1)** — measures information flow inefficiency (bottlenecks, path length, isolation)
-- **Cross-Parker survey integration** — derives signed edges (+1, -1) from survey dimensions
+- **Interactive signed network graph** — D3 force-directed, with positive/negative/neutral edge colours
+- **Hierarchical org view** — department-grouped tree layout
+- **Frustration Index (0–1)** — measures structural imbalance via Heider's balance theory (signed triangles)
+- **Organisational Cost (0–1)** — measures information flow inefficiency (betweenness centrality, path length)
+- **Cross-Parker survey integration** — derives signed edges from 4 ONA survey dimensions (Q1–Q4)
 - **Drag-and-drop experimentation** — move employees between departments and see metric changes
 - **Before/After comparison** — snapshot current state, apply changes, compare metrics
-- **Algorithmic recommendations** — prioritised structural improvement suggestions based on negativity and cost
+- **Algorithmic recommendations** — prioritised structural improvement suggestions
 
 ---
 
@@ -45,7 +44,7 @@ ona-tool/
 
 ---
 
-## Quick Start (Without Docker)
+## Quick Start
 
 ### 1. Backend
 
@@ -106,34 +105,44 @@ Full interactive docs at `http://localhost:8000/docs` (Swagger UI).
 
 ## Metrics Reference
 
-### Weighted Organisational Negativity (0–1, lower is better)
-
-The primary metric for hierarchical risk. It weights every interaction based on the seniority of the participants (defined by their `level` in the hierarchy).
-
-```
-Score(u, v) = edge_weight * 10^(max_level - max(level_u, level_v))
-WON = sum(Scores of Negative Edges) / sum(Scores of All Edges)
-```
-
-Negative edges at the Executive level (e.g., Level 0) are weighted significantly more than those at the Group level (e.g., Level 3).
-
 ### Frustration Index (0–1, lower is better)
 
-Measures structural imbalance in the signed network based on Heider's balance theory. A triangle is **frustrated** if it contains 1 or 3 negative edges. The index is the ratio of frustrated to total triangles. Note that neutral edges are removed prior to this calculation, treating only functional positive/negative ties.
+Measures structural imbalance in the signed network based on Heider's
+balance theory. A triangle is **frustrated** if it contains 1 or 3 negative
+edges. The index is the ratio of frustrated to total triangles.
 
 ```
 FI = frustrated_triangles / total_triangles
 ```
 
+**Interpretation:**
+- 0.0–0.3: Healthy — relationships are largely aligned
+- 0.3–0.6: Moderate — some social tension present
+- 0.6–1.0: Critical — widespread structural imbalance
+
+### Organisational Cost (0–1, lower is better)
+
+Composite measure of information flow inefficiency:
+
+```
+OC = 0.35 × betweenness_centralisation
+   + 0.30 × normalised_avg_path_length
+   + 0.20 × isolation_ratio
+   + 0.15 × negative_edge_ratio
+```
+
+**Interpretation:**
+- 0.0–0.3: Efficient — flat network, equitable load distribution
+- 0.3–0.6: Moderate — some bottlenecks, manageable path lengths
+- 0.6–1.0: Critical — centralised/fragmented, high coordination cost
+
 ### Signed Edge Signs (Cross-Parker)
 
-The tool operates on a binary sign system for finalized analysis. "There is no such thing as a neutral edge"—ambivalent interactions are removed to focus on active structural components.
-
-| Composite Score | Edge Sign | Status |
-|---------------|-----------|--------|
-| ≥ 3.5 | Positive (+1) | Active Tie |
-| < 2.0 | Negative (−1) | Conflict Tie |
-| 2.0–3.4 | Neutral (0) | **Filtered Out** |
+| Q1–Q4 Average | Edge Sign |
+|---------------|-----------|
+| ≥ 3.5 | Positive (+1) |
+| 2.0–3.4 | Neutral (0) |
+| < 2.0 | Negative (−1) |
 
 ---
 
@@ -153,20 +162,9 @@ Optional: `weight`, `department_source`, `department_target`, `q1`, `q2`, `q3`, 
 | Frontend framework | React 18 + Vite |
 | Graph visualisation | D3.js v7 |
 | State management | Zustand |
-| Routing | React Router v6 |
-| CSV parsing | PapaParse |
 | Styling | Tailwind CSS + custom CSS variables |
 | Backend framework | FastAPI |
 | Graph algorithms | NetworkX 3.x |
 | Data processing | Pandas + NumPy |
-| Containerisation | Docker + docker-compose |
 
 ---
-
-## References
-
-- Cross, R. & Parker, A. (2004). *The Hidden Power of Social Networks*. Harvard Business School Press.
-- Harary, F. (1953). On the notion of balance of a signed graph. *Michigan Mathematical Journal*.
-- Freeman, L.C. (1977). A set of measures of centrality based on betweenness. *Sociometry*.
-- Borgatti, S.P. (2005). Centrality and network flow. *Social Networks*.
-- Heider, F. (1946). Attitudes and cognitive organisation. *Journal of Psychology*.
