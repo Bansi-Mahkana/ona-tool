@@ -16,10 +16,17 @@ def build_nx_graph(nodes: List[dict], links: List[dict]) -> nx.DiGraph:
     G = nx.DiGraph()
 
     for node in nodes:
+        node_id = node["id"]
+        # Auto-calculate level based on ID prefix depth (0.1.1.1 -> Level 2)
+        parts = str(node_id).split('.')
+        level = max(0, len(parts) - 2)
+        
         G.add_node(
-            node["id"],
+            node_id,
             department=node.get("department", "Unknown"),
-            label=node.get("label", node["id"]),
+            label=node.get("label", node_id),
+            level=level,
+            is_swappable=node.get("is_swappable", True), # True by default
         )
 
     for link in links:

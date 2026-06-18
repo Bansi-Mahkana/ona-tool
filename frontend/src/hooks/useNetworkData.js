@@ -65,6 +65,8 @@ export function useNetworkData() {
           division: data.metrics.division,
           group: data.metrics.group,
           degreeCentrality: data.metrics.degree_centrality,
+          organizational_negativity: data.metrics.organizational_negativity,
+          negativity_ranking: data.metrics.negativity_ranking,
         })
       }
 

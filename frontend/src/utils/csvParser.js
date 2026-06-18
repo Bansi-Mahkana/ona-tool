@@ -34,8 +34,10 @@ export function buildGraphFromEdgeList(rows) {
     const deptSrc = row.department_source || row.dept_source || row.dept || 'Unknown'
     const deptTgt = row.department_target || row.dept_target || row.dept || 'Unknown'
 
-    if (!nodeMap[src]) nodeMap[src] = { id: src, department: deptSrc, label: src }
-    if (!nodeMap[tgt]) nodeMap[tgt] = { id: tgt, department: deptTgt, label: tgt }
+    const swappable = row.swappable ?? row.is_swappable ?? 1
+    
+    if (!nodeMap[src]) nodeMap[src] = { id: src, department: deptSrc, label: src, is_swappable: !!swappable }
+    if (!nodeMap[tgt]) nodeMap[tgt] = { id: tgt, department: deptTgt, label: tgt, is_swappable: !!swappable }
 
     // Cross-Parker survey columns
     const q1 = Number(row.q1 ?? -1) // information/advice frequency
@@ -93,9 +95,23 @@ export function computeEdgeSign(q1, q2, q3, q4, weight = 1) {
 }
 
 /**
- * Generate a sample Cross-Parker format CSV string for download/testing.
+ * Seedable Pseudo-Random Number Generator (Mulberry32)
  */
-export function generateSampleCSV() {
+function mulberry32(a) {
+  return function() {
+    var t = a += 0x6D2B79F5;
+    t = Math.imul(t ^ t >>> 15, t | 1);
+    t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  }
+}
+
+/**
+ * Generate a sample Cross-Parker format CSV string for download/testing.
+ * Uses a seed for deterministic generation.
+ */
+export function generateSampleCSV(seed = 42) {
+  const rnd = mulberry32(seed)
   const nodes = {} // map of id to { level, dept }
   const edges = {} // map of "u|v" to { sign, weight }
 
@@ -143,7 +159,7 @@ export function generateSampleCSV() {
   const execNodes = nodeList.filter(n => nodes[n].level === 0)
   for (let i = 0; i < execNodes.length; i++) {
     for (let j = i + 1; j < execNodes.length; j++) {
-      addEdge(execNodes[i], execNodes[j], 1, 0.7 + Math.random() * 0.3)
+      addEdge(execNodes[i], execNodes[j], 1, 0.7 + rnd() * 0.3)
     }
   }
 
@@ -167,7 +183,7 @@ export function generateSampleCSV() {
     else if (gap === 2) levelProb = 0.2
 
     const deptProb = (du === dv) ? 0.7 : 0.3
-    return Math.random() < (levelProb * deptProb)
+    return rnd() < (levelProb * deptProb)
   }
 
   // 4. SIGN + WEIGHT LOGIC
@@ -179,17 +195,17 @@ export function generateSampleCSV() {
 
     let sign, weight
     if (gu && gu === gv) {
-      sign = Math.random() < 0.3 ? -1 : 1
-      weight = 0.6 + Math.random() * 0.4
+      sign = rnd() < 0.3 ? -1 : 1
+      weight = 0.6 + rnd() * 0.4
     } else if (du === dv) {
-      sign = Math.random() < 0.2 ? -1 : 1
-      weight = 0.4 + Math.random() * 0.4
+      sign = rnd() < 0.2 ? -1 : 1
+      weight = 0.4 + rnd() * 0.4
     } else if (gap <= 1) {
-      sign = Math.random() < 0.08 ? -1 : 1
-      weight = 0.3 + Math.random() * 0.4
+      sign = rnd() < 0.08 ? -1 : 1
+      weight = 0.3 + rnd() * 0.4
     } else {
-      sign = Math.random() < 0.05 ? -1 : 1
-      weight = 0.1 + Math.random() * 0.4
+      sign = rnd() < 0.05 ? -1 : 1
+      weight = 0.1 + rnd() * 0.4
     }
     return { sign, weight }
   }
@@ -211,8 +227,8 @@ export function generateSampleCSV() {
 
   // 5. ADD RANDOM EDGES
   for (let i = 0; i < 170; i++) {
-    const u = nodeList[Math.floor(Math.random() * nodeList.length)]
-    const v = nodeList[Math.floor(Math.random() * nodeList.length)]
+    const u = nodeList[Math.floor(rnd() * nodeList.length)]
+    const v = nodeList[Math.floor(rnd() * nodeList.length)]
     if (u === v) continue
     if (hasEdge(u, v)) continue
     if (!validEdge(u, v)) continue
@@ -222,7 +238,7 @@ export function generateSampleCSV() {
 
   // 5.5 TRIADIC CLOSURE
   for (let i = 0; i < 170; i++) {
-    const u = nodeList[Math.floor(Math.random() * nodeList.length)]
+    const u = nodeList[Math.floor(rnd() * nodeList.length)]
     const neighbors = []
     Object.values(edges).forEach(e => {
       if (e.u === u) neighbors.push(e.v)
@@ -231,12 +247,12 @@ export function generateSampleCSV() {
 
     if (neighbors.length < 2) continue
 
-    const v = neighbors[Math.floor(Math.random() * neighbors.length)]
-    let w = neighbors[Math.floor(Math.random() * neighbors.length)]
+    const v = neighbors[Math.floor(rnd() * neighbors.length)]
+    let w = neighbors[Math.floor(rnd() * neighbors.length)]
     
     let tries = 0;
     while (v === w && tries < 10) {
-      w = neighbors[Math.floor(Math.random() * neighbors.length)]
+      w = neighbors[Math.floor(rnd() * neighbors.length)]
       tries++;
     }
     if (v === w) continue
@@ -251,7 +267,7 @@ export function generateSampleCSV() {
     if (sameLevel) prob += 0.2
     if (sameDept) prob += 0.2
 
-    if (Math.random() < prob) {
+    if (rnd() < prob) {
       const props = edgeProperties(v, w)
       if (!hasEdge(v, w)) {
         addEdge(v, w, props.sign, props.weight)
@@ -263,10 +279,10 @@ export function generateSampleCSV() {
   const generateQs = (sign) => {
     let q1, q2, q3, q4;
     while (true) {
-        q1 = Math.floor(Math.random() * 6) // 0-5
-        q2 = Math.floor(Math.random() * 6) // 0-5
-        q3 = Math.floor(Math.random() * 7) // 0-6
-        q4 = Math.floor(Math.random() * 7) // 0-6
+        q1 = Math.floor(rnd() * 6) // 0-5
+        q2 = Math.floor(rnd() * 6) // 0-5
+        q3 = Math.floor(rnd() * 7) // 0-6
+        q4 = Math.floor(rnd() * 7) // 0-6
         
         const normQ3 = (q3 / 6) * 5
         const normQ4 = (q4 / 6) * 5
@@ -307,25 +323,20 @@ export function buildHierarchy(nodes) {
   sortedNodes.forEach(node => {
     const parts = node.id.split('.')
     if (parts.length === 1 && node.id !== 'Organisation') {
-      // Top level nodes directly under ORG (unlikely in your setup but safe)
+      // Top level nodes directly under ORG
       const n = { id: node.id, name: node.label || node.id, children: [] }
       root.children.push(n)
       nodePool[node.id] = n
       return
     }
 
-    // Identify the parent path
-    // For 0.1.1.1.2, parent is 0.1.1.1
     const parentId = parts.slice(0, -1).join('.')
-    
-    // If parent doesn't exist in pool, we might need a placeholder or check if it's the root
     let parent = nodePool[parentId]
     
     if (!parent) {
       if (parts.length === 2 && (parts[0] === '0' || parts[0] === 'ORG')) {
          parent = root
       } else {
-        // Fallback for unexpected notation: put under root
         parent = root
       }
     }
@@ -341,4 +352,29 @@ export function buildHierarchy(nodes) {
   })
 
   return root
+}
+
+/**
+ * Parses a square matrix CSV into a nested object format { rowId: { colId: 1|0 } }.
+ * Assumes the first column contains row IDs and headers contain column IDs.
+ */
+export function parseMatrixCSV(rows) {
+  const matrix = {}
+  if (rows.length === 0) return matrix
+
+  // The first field in meta is usually the "corner" (blank or 'id'), the rest are node IDs.
+  // Using PapaParse's result directly is easier here but we receive 'rows' (array of objects).
+  
+  rows.forEach((row) => {
+    // Attempt to find the row ID. It's usually the first key that isn't one of the other column IDs.
+    const keys = Object.keys(row)
+    const rowId = row[keys[0]] // Heuristic: first column is the row ID
+    
+    matrix[rowId] = {}
+    keys.slice(1).forEach(colId => {
+      matrix[rowId][colId] = Number(row[colId]) || 0
+    })
+  })
+
+  return matrix
 }

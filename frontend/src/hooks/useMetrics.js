@@ -15,6 +15,7 @@ import {
   estimateInternalPositivity,
   estimateOrganizationalBalance,
   estimateInternalBalance,
+  estimateOrganizationalNegativity,
 } from '../utils/metricHelpers'
 
 const API_BASE = '/api'
@@ -36,12 +37,14 @@ export function useMetrics() {
     const intPos = estimateInternalPositivity(nodes, links)
     const orgBal = estimateOrganizationalBalance(nodes, links)
     const intBal = estimateInternalBalance(nodes, links)
+    const orgNeg = estimateOrganizationalNegativity(links)
 
     setMetrics({
-      frustrationIndex: fi,
-      organizationalPositivity: orgPos,
-      organizationalBalance: orgBal,
-      executive: { positivity: {}, balance: {} }, // Estimates not implemented for tiers yet
+      frustration_index: fi,
+      organizational_positivity: orgPos,
+      organizational_balance: orgBal,
+      organizational_negativity: orgNeg,
+      executive: { positivity: {}, balance: {} },
       division: { positivity: {}, balance: {} },
       group: { positivity: intPos, balance: intBal },
     })
@@ -49,7 +52,21 @@ export function useMetrics() {
     clearTimeout(debounceRef.current)
     debounceRef.current = setTimeout(async () => {
       try {
-        const payload = { nodes: graphData.nodes, links: graphData.links }
+        // CLEAN THE PAYLOAD: D3 objects -> String IDs
+        const cleanNodes = graphData.nodes.map(n => ({
+          id: String(n.id),
+          department: n.department ? String(n.department) : "Unknown",
+          label: n.label ? String(n.label) : String(n.id)
+        }))
+        const cleanLinks = graphData.links.map(l => ({
+          source: typeof l.source === 'object' ? String(l.source.id) : String(l.source),
+          target: typeof l.target === 'object' ? String(l.target.id) : String(l.target),
+          weight: l.weight || 1.0,
+          sign: l.sign || 0,
+          q1: l.q1, q2: l.q2, q3: l.q3, q4: l.q4
+        }))
+
+        const payload = { nodes: cleanNodes, links: cleanLinks }
         const res = await fetch(`${API_BASE}/network/metrics`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -57,14 +74,17 @@ export function useMetrics() {
         })
         if (!res.ok) return
         const data = await res.json()
+        console.log("BACKEND METRICS RESPONSE:", data)
         setMetrics({
-          frustrationIndex: data.frustration_index,
-          organizationalPositivity: data.organizational_positivity,
-          organizationalBalance: data.organizational_balance,
+          frustration_index: data.frustration_index,
+          organizational_positivity: data.organizational_positivity,
+          organizational_balance: data.organizational_balance,
           executive: data.executive,
           division: data.division,
           group: data.group,
-          degreeCentrality: data.degree_centrality,
+          degree_centrality: data.degree_centrality,
+          organizational_negativity: data.organizational_negativity,
+          negativity_ranking: data.negativity_ranking,
         })
       } catch {
         // Backend offline — client estimates already set above

@@ -5,6 +5,7 @@ import Landing from './pages/Landing'
 import Upload from './pages/Upload'
 import Analysis from './pages/Analysis'
 import Recommendations from './pages/Recommendations'
+import Optimization from './pages/Optimization'
 import useNetworkStore from './store/networkStore'
 
 export default function App() {
@@ -24,6 +25,7 @@ export default function App() {
             <Route path="/upload" element={<Upload />} />
             <Route path="/analysis" element={<Analysis />} />
             <Route path="/recommendations" element={<Recommendations />} />
+            <Route path="/optimization" element={<Optimization />} />
           </Routes>
         </div>
       </div>

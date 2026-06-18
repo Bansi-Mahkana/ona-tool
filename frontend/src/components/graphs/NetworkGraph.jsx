@@ -26,7 +26,7 @@ export default function NetworkGraph({ onNodeClick, onEdgeClick, width = 700, he
   const [showPositive, setShowPositive] = useState(true)
   const [showNegative, setShowNegative] = useState(true)
   const [showNeutral, setShowNeutral] = useState(true)
-  const [isPyramidMode, setIsPyramidMode] = useState(false)
+  const [isPyramidMode, setIsPyramidMode] = useState(true)
   const [isCentralityScaled, setIsCentralityScaled] = useState(false)
 
   // Sync activeDepts when new data arrives

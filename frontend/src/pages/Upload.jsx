@@ -1,9 +1,9 @@
 import { useState, useCallback } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useDropzone } from 'react-dropzone'
-import { Upload, FileText, CheckCircle, AlertCircle, Download, ChevronRight, Info, Cpu } from 'lucide-react'
+import { Upload, FileText, CheckCircle, AlertCircle, Download, ChevronRight, Info, Cpu, Sparkles } from 'lucide-react'
 import useNetworkStore from '../store/networkStore'
-import { parseCSV, buildGraphFromEdgeList, buildHierarchy, generateSampleCSV } from '../utils/csvParser'
+import { parseCSV, buildGraphFromEdgeList, buildHierarchy, generateSampleCSV, parseMatrixCSV } from '../utils/csvParser'
 import { useNetworkData } from '../hooks/useNetworkData'
 import {
   estimateFrustrationIndex, estimateOrganizationalPositivity,
@@ -28,7 +28,10 @@ export default function UploadPage() {
   const [searchParams] = useSearchParams()
   const isDemo = searchParams.get('demo') === 'true'
 
-  const { setRawData, setGraphData, setHierarchyData, setMetrics, setUploadStatus, uploadStatus } = useNetworkStore()
+  const { 
+    setRawData, setGraphData, setHierarchyData, setMetrics, 
+    setUploadStatus, uploadStatus, swappableMatrices, setSwappableMatrices 
+  } = useNetworkStore()
   const { analyseWithBackend, apiStatus } = useNetworkData()
 
   const [preview, setPreview] = useState(null)
@@ -68,6 +71,8 @@ export default function UploadPage() {
         frustrationIndex: fi,
         organizationalPositivity: orgPos,
         organizationalBalance: orgBal,
+        organizational_negativity: 0,
+        negativity_ranking: {},
         internalPositivity: intPos,
         internalBalance: intBal,
         degreeCentrality: null,
@@ -105,6 +110,23 @@ export default function UploadPage() {
     accept: { 'text/csv': ['.csv'], 'text/plain': ['.txt'] },
     maxFiles: 1,
   })
+
+  const handleMatrixUpload = useCallback(async (file) => {
+    try {
+      const result = await parseCSV(file)
+      const matrixData = parseMatrixCSV(result.data)
+      // Determine level based on headers
+      const nodeIds = Object.keys(matrixData)
+      if (nodeIds.length > 0) {
+        const parts = nodeIds[0].split('.')
+        const level = Math.max(0, parts.length - 2)
+        setSwappableMatrices({ ...swappableMatrices, [level]: matrixData })
+        alert(`Successfully imported swappable matrix for Level ${level}`)
+      }
+    } catch (err) {
+      setError("Matrix parse failed: " + err.message)
+    }
+  }, [swappableMatrices, setSwappableMatrices])
 
   const loadDemo = () => {
     const csv = generateSampleCSV()
@@ -316,14 +338,34 @@ export default function UploadPage() {
               </div>
             </div>
 
-            <div className="card p-5" style={{ background: 'rgba(245,166,35,0.04)', borderColor: 'rgba(245,166,35,0.2)' }}>
-              <p className="font-code text-xs mb-3" style={{ color: '#f5a623', letterSpacing: '0.08em' }}>
-                ⚠ NOTE
-              </p>
-              <p className="font-body" style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
-                Client-side metrics are quick estimates. For full algorithmic accuracy, ensure the backend API is running.
-              </p>
-            </div>
+            {uploadStatus === 'success' && (
+              <div className="card p-5 mt-4" style={{ background: 'rgba(79,195,247,0.04)' }}>
+                <div className="flex items-center gap-2 mb-4">
+                  <Sparkles size={14} style={{ color: '#4fc3f7' }} />
+                  <p className="font-code text-xs" style={{ color: '#4fc3f7', letterSpacing: '0.08em' }}>
+                    RELOCATION OPTIMIZATION
+                  </p>
+                </div>
+                <p className="font-body text-xs mb-4" style={{ color: 'var(--text-muted)', lineHeight: 1.5 }}>
+                  Define swap constraints. You can either define these in the dashboard or upload a per-level matrix CSV.
+                </p>
+                <label className="btn-secondary flex items-center justify-center gap-2" style={{ cursor: 'pointer' }}>
+                   <Upload size={14} /> IMPORT MATRIX CSV
+                   <input 
+                      type="file" 
+                      style={{ display: 'none' }} 
+                      accept=".csv" 
+                      onChange={(e) => e.target.files[0] && handleMatrixUpload(e.target.files[0])} 
+                   />
+                </label>
+                <button 
+                  className="btn-primary w-full mt-3 flex items-center justify-center gap-2 py-3"
+                  onClick={() => navigate('/optimization')}
+                >
+                  GO TO DASHBOARD <ChevronRight size={14} />
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>

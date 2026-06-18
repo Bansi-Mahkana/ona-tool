@@ -12,13 +12,15 @@ from ..services.signed_network import (
     compute_organizational_positivity,
     compute_organizational_balance,
     compute_hierarchical_metrics,
+    compute_weighted_organizational_negativity,
+    compute_node_negativity_ranking,
 )
 from ..services.frustration_index import compute_frustration_index
 
 router = APIRouter(prefix="/network", tags=["network"])
 
 
-@router.post("/metrics", response_model=MetricsOut)
+@router.post("/metrics")
 async def compute_metrics(graph: GraphIn):
     """
     Full metric computation for the uploaded graph.
@@ -46,6 +48,9 @@ async def compute_metrics(graph: GraphIn):
         except Exception:
             degree_centrality = {}
 
+        # ── Signed Network Metrics ────────────────────────────────────────
+        org_neg, neg_rank = compute_weighted_organizational_negativity(G)
+
         return MetricsOut(
             frustration_index=frustration_index,
             organizational_positivity=org_positivity,
@@ -54,9 +59,15 @@ async def compute_metrics(graph: GraphIn):
             division=h_metrics["division"],
             group=h_metrics["group"],
             degree_centrality=degree_centrality,
+            organizational_negativity=org_neg,
+            negativity_ranking=neg_rank,
+            internal_positivity=h_metrics["group"]["positivity"], # using hierarchical group positivity as internal
+            internal_balance=h_metrics["group"]["balance"],       # using hierarchical group balance as internal
         )
 
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -95,4 +106,6 @@ async def simulate_change(graph: GraphIn, change: ChangeRequest):
             },
         }
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))

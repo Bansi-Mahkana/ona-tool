@@ -22,6 +22,7 @@ Each row represents a directed relationship (edge) from one person to another.
 | `q2` | Cross-Parker Q2: Expertise recognition | 0–5 | 0=Don't know, 5=Strongly Agree |
 | `q3` | Cross-Parker Q3: Information usefulness | 0–6 | 0=Never met, 6=Very Frequently |
 | `q4` | Cross-Parker Q4: Knowledge awareness | 0–6 | 0=Never met, 6=Strongly Agree |
+| `swappable` | Binary constraint for relocation | 0 or 1 | 0=Fixed, 1=Swappable (Default) |
 
 ### Column Name Aliases
 
@@ -70,11 +71,11 @@ Organisational Network Analysis:
 
 When Q1–Q4 columns are present, the tool automatically assigns edge signs:
 
-| Composite Score | Sign | Meaning |
-|-----------------|------|---------|
-| ≥ 3.5 | **+1 (Positive)** | Strong, supportive tie — displayed as solid green |
-| < 2.0 | **−1 (Negative)** | Weak/conflicted tie — displayed as dashed red |
-| 2.0–3.4 | **0 (Neutral)** | Ambivalent tie — displayed as solid blue |
+| Composite Score | Sign | Meaning | Status |
+|-----------------|------|---------|--------|
+| ≥ 3.5 | **+1 (Positive)** | Strong, supportive tie | Active |
+| < 2.0 | **−1 (Negative)** | Weak/conflicted tie | Active |
+| 2.0–3.4 | **0 (Neutral)** | Ambivalent tie | **Filtered Out** |
 
 Q3 and Q4 (0–6 scale) are normalised to 0–5 before scoring.
 

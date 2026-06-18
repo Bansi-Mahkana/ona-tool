@@ -56,7 +56,7 @@ export default function MetricGauge({ value, label, subtitle, invertedScale = tr
           fontWeight="700"
           fontSize={size < 100 ? 14 : 18}
         >
-          {isNA ? 'N/A' : value.toFixed(2)}
+          {isNA ? 'N/A' : (value < 0.01 && value > 0 ? value.toFixed(4) : value.toFixed(2))}
         </text>
         <text
           x={size / 2} y={size / 2 + 14}

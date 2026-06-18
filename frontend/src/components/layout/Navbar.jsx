@@ -1,12 +1,13 @@
 import { useNavigate, useLocation } from 'react-router-dom'
-import { Network, Upload, BarChart2, Lightbulb, RotateCcw, Moon, Sun } from 'lucide-react'
+import { Network, Upload, BarChart2, Lightbulb, RotateCcw, Moon, Sun, Sparkles } from 'lucide-react'
 import useNetworkStore from '../../store/networkStore'
 
 const NAV_ITEMS = [
   { path: '/', label: 'HOME', icon: Network },
   { path: '/upload', label: 'IMPORT', icon: Upload },
   { path: '/analysis', label: 'ANALYSE', icon: BarChart2 },
-  { path: '/recommendations', label: 'OPTIMISE', icon: Lightbulb },
+  { path: '/recommendations', label: 'PREDICT', icon: Lightbulb },
+  { path: '/optimization', label: 'OPTIMIZE', icon: Sparkles },
 ]
 
 export default function Navbar() {

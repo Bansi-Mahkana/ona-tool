@@ -8,9 +8,12 @@ from ..services.graph_builder import build_nx_graph
 from ..services.signed_network import (
     annotate_signs,
     compute_organizational_positivity,
-    compute_organizational_balance,
     compute_hierarchical_metrics,
-    _get_balanced_triangles,
+    compute_weighted_organizational_negativity,
+    compute_node_negativity_ranking,
+    compute_internal_positivity,
+    compute_internal_balance,
+    compute_triadic_metrics,
 )
 from ..services.frustration_index import compute_frustration_index, frustration_breakdown
 
@@ -101,13 +104,11 @@ async def upload_csv(file: UploadFile = File(...)):
         UG = G.to_undirected()
 
         # Compute metrics
+        triadic = compute_triadic_metrics(G)
         fi = compute_frustration_index(G)
         
         org_positivity = compute_organizational_positivity(G)
-        
-        # New Organizational Balance calculation logic
-        total_t, bal_t = _get_balanced_triangles(G)
-        org_balance = round(bal_t / total_t, 4) if total_t > 0 else 0.0
+        org_balance = triadic["balance_ratio"]
         
         h_metrics = compute_hierarchical_metrics(G)
 
@@ -117,6 +118,15 @@ async def upload_csv(file: UploadFile = File(...)):
             dc = {k: round(v, 4) for k, v in nx.degree_centrality(G).items()}
         except Exception:
             dc = {}
+
+        # ── Negativity Metrics ──
+        org_neg, neg_rank = compute_weighted_organizational_negativity(G)
+
+        # Diagnostic logging
+        print(f"\n[METRICS SUCCESS] Nodes: {len(nodes)}, NegRank: {len(neg_rank)}")
+        print(f"Executive Keys: {list(h_metrics['executive']['positivity'].keys())}")
+        print(f"Division Keys: {list(h_metrics['division']['positivity'].keys())}")
+        print(f"Group Keys: {list(h_metrics['group']['positivity'].keys())}")
 
         return {
             "graph": {"nodes": nodes, "links": edges},
@@ -128,6 +138,10 @@ async def upload_csv(file: UploadFile = File(...)):
                 "division": h_metrics["division"],
                 "group": h_metrics["group"],
                 "degree_centrality": dc,
+                "organizational_negativity": org_neg,
+                "negativity_ranking": neg_rank,
+                "internal_positivity": compute_internal_positivity(G),
+                "internal_balance": compute_internal_balance(G),
             },
             "details": {
                 "frustration": fi_detail,

@@ -10,7 +10,7 @@ import HierarchyGraph from '../components/graphs/HierarchyGraph'
 import CentralityChart from '../components/graphs/CentralityChart'
 import MetricGauge from '../components/metrics/MetricGauge'
 import RecommendationPanel from '../components/recommendations/RecommendationPanel'
-import { interpretFrustrationIndex, interpretPositivity, interpretBalance } from '../utils/metricHelpers'
+import { interpretFrustrationIndex, interpretPositivity, interpretBalance, interpretNegativity } from '../utils/metricHelpers'
 import { useMetrics } from '../hooks/useMetrics'
 
 const TABS = [
@@ -82,9 +82,10 @@ export default function Analysis() {
   }, [departments])
 
   const allMetrics = [
-    { key: 'frustrationIndex',    label: 'Frustration Index', subtitle: 'Signed balance',  invertedScale: true  },
-    { key: 'organizationalPositivity', label: 'Org Positivity', subtitle: 'Supportive ties', invertedScale: false },
-    { key: 'organizationalBalance', label: 'Org Balance',     subtitle: 'Triad harmony',  invertedScale: false },
+    { key: 'frustration_index',    label: 'Frustration Index', subtitle: 'Signed balance',  invertedScale: true  },
+    { key: 'organizational_positivity', label: 'Org Positivity', subtitle: 'Supportive ties', invertedScale: false },
+    { key: 'organizational_balance', label: 'Org Balance',     subtitle: 'Triad harmony',  invertedScale: false },
+    { key: 'organizational_negativity', label: 'Org Negativity', subtitle: 'Weighted friction', invertedScale: true },
   ]
 
   return (
@@ -231,6 +232,7 @@ export default function Analysis() {
                   <div style={{ display: 'flex', gap: 4, marginLeft: 'auto' }}>
                     {[
                       { id: 'degree', label: 'Degree' },
+                      { id: 'negativity', label: 'Negativity' },
                     ].map((opt) => (
                       <button
                         key={opt.id}
@@ -279,12 +281,14 @@ export default function Analysis() {
               {allMetrics.map((m) => {
                 const val = metrics[m.key]
                 const prev = snapshotMetrics?.[m.key] ?? null
-                const interp = m.key === 'frustrationIndex'
+                const interp = m.key === 'frustration_index'
                   ? interpretFrustrationIndex(val)
-                  : m.key === 'organizationalPositivity'
+                  : m.key === 'organizational_positivity'
                   ? interpretPositivity(val)
-                  : m.key === 'organizationalBalance'
+                  : m.key === 'organizational_balance'
                   ? interpretBalance(val)
+                  : m.key === 'organizational_negativity'
+                  ? interpretNegativity(val)
                   : null
                 return (
                   <div key={m.key} className="card p-5" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
@@ -414,6 +418,36 @@ export default function Analysis() {
                         </div>
                       </div>
                     ))}
+                </div>
+              </div>
+
+              {/* Negative Ranking Summary (Smart Addition) */}
+              <div className="card p-5" style={{ gridColumn: '1 / -1' }}>
+                <p style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.65rem', color: '#ff4757', letterSpacing: '0.1em', marginBottom: 14 }}>
+                  TOP NEGATIVE INFLUENCERS (RISK NODES)
+                </p>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 10 }}>
+                  {Object.entries(metrics.negativity_ranking || {})
+                    .sort(([, a], [, b]) => b - a)
+                    .slice(0, 8)
+                    .map(([id, score]) => (
+                      <div 
+                        key={id} 
+                        onClick={() => { setSelectedNode(graphData.nodes.find(n => n.id === id)); setActiveTab('network'); }}
+                        style={{ background: 'rgba(255, 71, 87, 0.04)', border: '1px solid rgba(255, 71, 87, 0.15)', borderRadius: 8, padding: '10px 12px', cursor: 'pointer' }}
+                      >
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.8rem', color: 'var(--text-primary)' }}>{id}</span>
+                          <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.85rem', color: '#ff4757', fontWeight: 600 }}>{score.toFixed(2)}</span>
+                        </div>
+                        <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '0.62rem', color: 'var(--text-muted)', marginTop: 2 }}>
+                          Total Negative Weight
+                        </div>
+                      </div>
+                    ))}
+                  {(!metrics.negativity_ranking || Object.keys(metrics.negativity_ranking).length === 0) && (
+                    <div style={{ gridColumn: '1 / -1', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.7rem' }}>No negativity data detected.</div>
+                  )}
                 </div>
               </div>
 

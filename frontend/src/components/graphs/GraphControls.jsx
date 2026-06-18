@@ -69,21 +69,6 @@ export default function GraphControls({
           </button>
         ))}
         
-        {/* Pyramid Mode Toggle */}
-        <div style={{ height: 1, background: 'rgba(79,195,247,0.1)', margin: '4px 0' }} />
-        <button
-          title={isPyramidMode ? "Standard View" : "Pyramid Hierarchy View"}
-          onClick={onTogglePyramid}
-          style={{
-            background: isPyramidMode ? 'rgba(79,195,247,0.12)' : 'transparent',
-            border: 'none', cursor: 'pointer',
-            color: isPyramidMode ? '#4fc3f7' : 'var(--text-secondary)',
-            padding: '5px 7px', borderRadius: 5, lineHeight: 0,
-            transition: 'all 0.15s',
-          }}
-        >
-          <GitBranch size={14} />
-        </button>
 
         <button
           title={isCentralityScaled ? "Normal Sizes" : "Scale Nodes by Influence"}

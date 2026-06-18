@@ -33,6 +33,10 @@ class MetricsOut(BaseModel):
     division: TieredMetrics
     group: TieredMetrics
     degree_centrality: Dict[str, float]
+    organizational_negativity: float
+    negativity_ranking: Dict[str, float]
+    internal_positivity: Dict[str, float]
+    internal_balance: Dict[str, float]
 
 class RecommendationOut(BaseModel):
     priority: str          # HIGH | MEDIUM | LOW
@@ -51,3 +55,29 @@ class ChangeRequest(BaseModel):
     moves: List[Dict[str, str]] = []           # [{nodeId, newDepartment}]
     add_edges: List[Dict[str, str]] = []        # [{source, target}]
     remove_edges: List[Dict[str, str]] = []     # [{source, target}]
+
+
+class SwappableMatrix(BaseModel):
+    level: int
+    matrix: Dict[str, Dict[str, int]]  # {nodeId_u: {nodeId_v: 0|1}}
+
+
+class OptimizationRequest(BaseModel):
+    nodes: List[NodeIn]
+    links: List[EdgeIn]
+    swappable_matrices: Dict[int, Dict[str, Dict[str, int]]] # level -> matrix
+
+
+class SwapOutcome(BaseModel):
+    node_a: str
+    node_b: str
+    from_dept_a: str
+    from_dept_b: str
+    improvement: float
+    pos_a_delta: float = 0.0
+    pos_b_delta: float = 0.0
+
+
+class OptimizationOut(BaseModel):
+    swaps: List[SwapOutcome]
+    summary: str

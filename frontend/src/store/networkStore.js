@@ -1,6 +1,9 @@
 import { create } from 'zustand'
+import { persist, createJSONStorage } from 'zustand/middleware'
 
-const useNetworkStore = create((set, get) => ({
+const useNetworkStore = create(
+  persist(
+    (set, get) => ({
   // ── Raw dataset ──────────────────────────────────────────────────
   rawData: null,
   fileName: null,
@@ -16,13 +19,16 @@ const useNetworkStore = create((set, get) => ({
 
   // ── Metrics ──────────────────────────────────────────────────────
   metrics: {
-    frustrationIndex: null,       // 0-1
-    organizationalPositivity: null,
-    organizationalBalance: null,
+    frustration_index: null,       // 0-1
+    organizational_positivity: null,
+    organizational_balance: null,
     executive: { positivity: {}, balance: {} },
     division: { positivity: {}, balance: {} },
     group: { positivity: {}, balance: {} },
-    degreeCentrality: null,       // { nodeA: 0.1, nodeB: ... }
+    degree_centrality: null,
+    organizational_negativity: null,
+    negativity_ranking: {},
+    swappableMatrices: {}, // { level: { u: { v: 1 } } }
   },
 
   // ── Snapshot for before/after comparison ─────────────────────────
@@ -36,6 +42,8 @@ const useNetworkStore = create((set, get) => ({
   sidebarOpen: true,
   interpretationMode: 'current', // 'current' | 'after'
   theme: 'dark',
+  swappableMatrices: {}, // { level: { u: { v: 1 } } }
+  optimizationResults: null,
 
   // ── Actions ──────────────────────────────────────────────────────
   setRawData: (data, fileName) => set({ rawData: data, fileName }),
@@ -61,6 +69,16 @@ const useNetworkStore = create((set, get) => ({
   toggleSidebar: () => set((s) => ({ sidebarOpen: !s.sidebarOpen })),
   toggleTheme: () => set((s) => ({ theme: s.theme === 'light' ? 'dark' : 'light' })),
   setInterpretationMode: (mode) => set({ interpretationMode: mode }),
+
+  setSwappableMatrices: (matrices) => set({ swappableMatrices: matrices }),
+  updateSwappableMatrixCell: (level, u, v, value) => set((s) => {
+    const updated = { ...s.swappableMatrices }
+    if (!updated[level]) updated[level] = {}
+    if (!updated[level][u]) updated[level][u] = {}
+    updated[level][u][v] = value
+    return { swappableMatrices: updated }
+  }),
+  setOptimizationResults: (results) => set({ optimizationResults: results }),
 
   // Move employee from one department to another (experiment)
   moveEmployee: (nodeId, newDepartment) => {
@@ -113,19 +131,29 @@ const useNetworkStore = create((set, get) => ({
       hierarchyData: null,
       edgeSigns: {},
       metrics: {
-        frustrationIndex: null,
-        organizationalPositivity: null,
-        organizationalBalance: null,
+        frustration_index: null,
+        organizational_positivity: null,
+        organizational_balance: null,
         executive: { positivity: {}, balance: {} },
         division: { positivity: {}, balance: {} },
         group: { positivity: {}, balance: {} },
-        degreeCentrality: null,
+        degree_centrality: null,
+        organizational_negativity: null,
+        negativity_ranking: {},
+        swappableMatrices: {},
       },
       snapshotMetrics: null,
       pendingChanges: [],
       selectedNode: null,
       selectedEdge: null,
+      optimizationResults: null,
     }),
-}))
+  }),
+  {
+    name: 'nexus-ona-storage',
+    storage: createJSONStorage(() => localStorage),
+  }
+)
+)
 
 export default useNetworkStore

@@ -41,6 +41,12 @@ export function estimateOrganizationalPositivity(links) {
   return parseFloat((pos / links.length).toFixed(4))
 }
 
+export function estimateOrganizationalNegativity(links) {
+  if (!links || links.length === 0) return 0
+  const neg = links.filter(l => l.sign === -1).length
+  return parseFloat((neg / links.length).toFixed(4))
+}
+
 export function estimateInternalPositivity(nodes, links) {
   if (!nodes || !links) return null
   const internal = {}
@@ -73,7 +79,7 @@ export function estimateInternalPositivity(nodes, links) {
 }
 
 export function estimateOrganizationalBalance(nodes, links) {
-  return estimateOrganizationalPositivity(links) // Very rough proxy
+  return parseFloat((1 - estimateFrustrationIndex(nodes, links)).toFixed(4))
 }
 
 export function estimateInternalBalance(nodes, links) {
@@ -143,6 +149,14 @@ export function interpretBalance(value) {
   return 'Low balance. Many unstable triangles, indicating high structural tension and conflict.'
 }
 
+export function interpretNegativity(value) {
+  if (value === null) return null
+  if (value <= 0.15) return 'Low organizational negativity. Social friction is minimal and contained.'
+  if (value <= 0.35) return 'Moderate negativity. Some pockets of friction detected, likely in lower layers.'
+  if (value <= 0.55) return 'High negativity. Significant friction is affecting organizational performance.'
+  return 'Critical negativity level. Widespread social friction, likely involving leadership/executive tiers.'
+}
+
 /**
  * Generate after-change interpretation by comparing before/after metrics.
  */
@@ -154,15 +168,24 @@ export function interpretChange(before, after, metricName) {
   if (Math.abs(delta) < 0.01) return 'This change had negligible impact on the metric.'
 
   const dir = delta < 0 ? 'decreased' : 'increased'
-  const implication =
-    metricName === 'frustrationIndex'
-      ? delta < 0
-        ? `This is a positive improvement — the network is becoming more balanced with fewer conflicted triadic relationships.`
-        : `This worsens structural balance, suggesting the added/removed connection introduces more asymmetric relationships.`
-      : delta > 0
+  
+  let implication = ''
+  if (metricName === 'frustration_index' || metricName === 'organizational_negativity') {
+    implication = delta < 0 
+      ? `This is a positive improvement — structural friction and negativity are subsiding.`
+      : `This increases organizational friction or negativity, which could impede performance.`
+  } else {
+    implication = delta > 0
       ? `This is a positive improvement — the metric increased.`
       : `This is a negative outcome — the metric decreased.`
+  }
 
-  const legibleName = metricName === 'frustrationIndex' ? 'Frustration Index' : metricName
+  const nameMap = {
+    'frustration_index': 'Frustration Index',
+    'organizational_positivity': 'Org Positivity',
+    'organizational_balance': 'Org Balance',
+    'organizational_negativity': 'Org Negativity'
+  }
+  const legibleName = nameMap[metricName] || metricName
   return `The ${legibleName} ${dir} by ${pct}%. ${implication}`
 }

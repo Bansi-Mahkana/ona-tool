@@ -17,7 +17,8 @@ This integrates with ONA signed network analysis, enabling Heider's
 structural balance theory computation for the frustration index.
 """
 import networkx as nx
-from typing import Optional
+import numpy as np
+from typing import Optional, List, Dict, Any, Tuple
 
 
 def normalise_q(value: float, max_scale: float = 5.0) -> float:
@@ -69,11 +70,14 @@ def derive_edge_sign(
 
 def annotate_signs(G: nx.DiGraph) -> nx.DiGraph:
     """
-    Iterates over all edges in G and sets the 'sign' attribute
-    based on Cross-Parker survey columns if not already set.
+    Sets the 'sign' attribute for all edges and REMOVES neutral (sign 0) edges.
+    Ensures 'no interaction' = 'no edge'.
     """
+    to_remove = []
     for u, v, data in G.edges(data=True):
-        if data.get("sign", 0) == 0:
+        sign = data.get("sign", 0)
+        if sign == 0:
+            # Try to derive from survey data if missing
             sign = derive_edge_sign(
                 data.get("q1"),
                 data.get("q2"),
@@ -81,7 +85,14 @@ def annotate_signs(G: nx.DiGraph) -> nx.DiGraph:
                 data.get("q4"),
                 data.get("weight", 1.0),
             )
+        
+        if sign == 0:
+            to_remove.append((u, v))
+        else:
             G[u][v]["sign"] = sign
+    
+    # Purge neutral edges (the user's request: "there is no such thing as a neutral edge")
+    G.remove_edges_from(to_remove)
     return G
 
 
@@ -162,30 +173,73 @@ def compute_internal_positivity(G: nx.DiGraph) -> dict:
     for dept, total in total_internal.items():
         internal[dept] = round(positive_internal.get(dept, 0) / total, 4) if total > 0 else 0.0
 
-    for node, data in G.nodes(data=True):
-        dept = data.get("department", "Unknown")
+    # Ensure all departments are present
+    all_depts = set(nx.get_node_attributes(G, 'department').values())
+    for dept in all_depts:
         if dept not in internal:
             internal[dept] = 0.0
 
     return internal
 
 
-def _get_balanced_triangles(G: nx.Graph, dept_filter=None):
+def _structural_proxy(G: nx.DiGraph) -> float:
+    """
+    Fallback when no triangles exist.
+    Proxy based on:
+      - Ratio of negative edges
+      - Degree coefficient of variation (inequality)
+    """
+    edges = list(G.edges(data=True))
+    if not edges:
+        return 0.0
+
+    n_neg = sum(1 for _, _, d in edges if d.get("sign") == -1)
+    neg_ratio = n_neg / len(edges) if edges else 0
+
+    degrees = [d for _, d in G.degree()]
+    if not degrees:
+        return neg_ratio
+
+    avg = np.mean(degrees)
+    std = np.std(degrees)
+    cv = (std / avg) if avg > 0 else 0
+
+    proxy = 0.5 * neg_ratio + 0.5 * min(cv / 3.0, 1.0)
+    return round(min(proxy, 1.0), 4)
+
+
+def compute_internal_balance(G: nx.DiGraph) -> dict:
+    """Ratio of balanced triangles within each department."""
+    internal_bal = {}
+    all_depts = set(nx.get_node_attributes(G, 'department').values())
+
+    for dept in all_depts:
+        # Subgraph of nodes belonging to this department
+        nodes = [n for n, d in G.nodes(data=True) if d.get('department') == dept]
+        if not nodes:
+            internal_bal[dept] = 0.0
+            continue
+        S = G.subgraph(nodes)
+        res = compute_triadic_metrics(S)
+        internal_bal[dept] = res["balance_ratio"]
+
+    return internal_bal
+
+
+def compute_triadic_metrics(G: nx.DiGraph) -> dict:
+    """
+    Unified function to find all triangles and categorize them.
+    Ensures that Balance + Frustration = 1.0.
+    """
     UG = G.to_undirected() if G.is_directed() else G
     total_triangles = 0
     balanced_triangles = 0
+    frustrated_triangles = 0
 
     for triangle in nx.enumerate_all_cliques(UG):
         if len(triangle) != 3:
             continue
         u, v, w = triangle
-
-        if dept_filter is not None:
-            dept_u = G.nodes[u].get("department", "Unknown")
-            dept_v = G.nodes[v].get("department", "Unknown")
-            dept_w = G.nodes[w].get("department", "Unknown")
-            if dept_u != dept_filter or dept_v != dept_filter or dept_w != dept_filter:
-                continue
 
         neg_count = 0
         for a, b in [(u, v), (v, w), (u, w)]:
@@ -198,26 +252,42 @@ def _get_balanced_triangles(G: nx.Graph, dept_filter=None):
                 neg_count += 1
 
         total_triangles += 1
-        # Balanced if 0 or 2 negative edges
         if neg_count == 0 or neg_count == 2:
             balanced_triangles += 1
+        else:
+            frustrated_triangles += 1
 
-    return total_triangles, balanced_triangles
+    if total_triangles == 0:
+        proxy_fi = _structural_proxy(G)
+        return {
+            "total": 0,
+            "balanced": 0,
+            "frustrated": 0,
+            "balance_ratio": round(1 - proxy_fi, 4),
+            "frustration_ratio": proxy_fi
+        }
+
+    return {
+        "total": total_triangles,
+        "balanced": balanced_triangles,
+        "frustrated": frustrated_triangles,
+        "balance_ratio": round(balanced_triangles / total_triangles, 4),
+        "frustration_ratio": round(frustrated_triangles / total_triangles, 4)
+    }
+
 
 def compute_organizational_balance(G: nx.DiGraph) -> float:
-    """Ratio of balanced triangles to total triangles in the organization."""
-    total, balanced = _get_balanced_triangles(G)
-    if total == 0:
-        return 0.0
-    return round(balanced / total, 4)
+    """Ratio of balanced triangles to total triangles."""
+    res = compute_triadic_metrics(G)
+    return res["balance_ratio"]
 
 
 def compute_hierarchical_metrics(G: nx.DiGraph):
     """
-    Computes Positivity and Balance at 3 hierarchical levels:
-    - Executive (e.g. 0.1)
-    - Division  (e.g. 0.1.1)
-    - Group     (e.g. 0.1.1.1)
+    Computes Positivity and Balance at 3 hierarchical levels based on ID depth.
+    - 0.X       -> Executive
+    - 0.X.Y     -> Division
+    - 0.X.Y.Z   -> Group
     """
     results = {
         "executive": {"positivity": {}, "balance": {}},
@@ -225,48 +295,91 @@ def compute_hierarchical_metrics(G: nx.DiGraph):
         "group":     {"positivity": {}, "balance": {}}
     }
     
-    # Identify prefixes at each level
-    execs = set()
-    divs = set()
-    groups = set()
-    
-    for n in G.nodes():
-        parts = str(n).split('.')
-        if len(parts) >= 2: execs.add('.'.join(parts[:2]))
-        if len(parts) >= 3: divs.add('.'.join(parts[:3]))
-        if len(parts) >= 4: groups.add('.'.join(parts[:4]))
-        
-    # Helper to compute for a prefix
-    def _get_metrics_for_prefix(prefix: str):
-        # Subgraph where BOTH nodes start with this prefix
-        sub_nodes = [n for n in G.nodes() if str(n).startswith(prefix + '.') or str(n) == prefix]
+    def _get_node_metrics(node_id):
+        # We look at the internal relationships of this specific node/unit
+        # Or if it has children, the relationships among its children.
+        sub_nodes = [n for n in G.nodes() if str(n).startswith(node_id + '.') or str(n) == node_id]
         S = G.subgraph(sub_nodes)
+        if not S.edges: return 0.0, 0.0
         
-        # Positivity
-        edges = list(S.edges(data=True))
-        pos = sum(1 for _, _, d in edges if d.get("sign") == 1)
-        total_e = len(edges)
-        positivity = round(pos / total_e, 4) if total_e > 0 else 0.0
-        
-        # Balance
-        total_t, bal_t = _get_balanced_triangles(S)
-        balance = round(bal_t / total_t, 4) if total_t > 0 else 0.0
-        
-        return positivity, balance
+        pos = sum(1 for _, _, d in S.edges(data=True) if d.get("sign") == 1)
+        pr = round(pos / len(S.edges), 4)
+        br = compute_triadic_metrics(S)["balance_ratio"]
+        return pr, br
 
-    for p in execs:
-        p_val, b_val = _get_metrics_for_prefix(p)
-        results["executive"]["positivity"][p] = p_val
-        results["executive"]["balance"][p] = b_val
+    for n in G.nodes():
+        node_id = str(n)
+        dot_count = node_id.count('.')
         
-    for p in divs:
-        p_val, b_val = _get_metrics_for_prefix(p)
-        results["division"]["positivity"][p] = p_val
-        results["division"]["balance"][p] = b_val
-        
-    for p in groups:
-        p_val, b_val = _get_metrics_for_prefix(p)
-        results["group"]["positivity"][p] = p_val
-        results["group"]["balance"][p] = b_val
-        
+        # Calculate metrics for this unit (it and its children)
+        pr, br = _get_node_metrics(node_id)
+
+        if dot_count == 1: # 0.1
+            results["executive"]["positivity"][node_id] = pr
+            results["executive"]["balance"][node_id] = br
+        elif dot_count == 2: # 0.1.1
+            results["division"]["positivity"][node_id] = pr
+            results["division"]["balance"][node_id] = br
+        elif dot_count == 3: # 0.1.1.1 (Group level - stop here)
+            results["group"]["positivity"][node_id] = pr
+            results["group"]["balance"][node_id] = br
+
+    # Diagnostic
+    print(f"[HIERARCHY] Exec: {len(results['executive']['positivity'])}, Div: {len(results['division']['positivity'])}, Group: {len(results['group']['positivity'])}")
+    
     return results
+
+from collections import defaultdict
+
+def compute_weighted_organizational_negativity(G: nx.DiGraph, max_level: int = 3) -> tuple[float, dict]:
+    """
+    Computes overall organizational negativity and node rankings in a single pass.
+    Formula: neg_score / total_score
+    Weight Factor: 10 ^ (max_level - max(level_u, level_v))
+    Returns (overall_score, ranking_dict).
+    """
+    if not G.edges:
+        return 0.0, {}
+
+    total_score = 0.0
+    neg_score = 0.0
+    node_scores = defaultdict(float)
+
+    for u, v, data in G.edges(data=True):
+        sign = data.get('sign', 0)
+        edge_weight = data.get('weight', 1.0)
+
+        # Ensure levels exist (default to max_level if missing)
+        lu = G.nodes[u].get('level', max_level)
+        lv = G.nodes[v].get('level', max_level)
+
+        # Hierarchy importance factor: 10 ** (max_level - max(lu, lv))
+        level_factor = 10 ** (max_level - max(lu, lv))
+
+        # FINAL EDGE SCORE
+        score = edge_weight * level_factor
+        total_score += score
+
+        if sign == -1:
+            neg_score += score
+            # Accumulate risk for both involved nodes
+            node_scores[u] += score
+            node_scores[v] += score
+
+    overall = round(neg_score / total_score, 4) if total_score > 0 else 0.0
+    
+    # DIAGNOSTIC LOGGING (Visible in Uvicorn terminal)
+    print(f"\n[NEGATIVITY CALC] Total Weighted Score: {total_score:.2f}")
+    print(f"[NEGATIVITY CALC] Neg Weighted Score: {neg_score:.2f}")
+    print(f"[NEGATIVITY CALC] Final Ratio: {overall:.4f}")
+    print(f"[NEGATIVITY CALC] Ranking Nodes Found: {len(node_scores)}")
+
+    return overall, dict(node_scores)
+
+
+def compute_node_negativity_ranking(G: nx.DiGraph) -> dict:
+    """
+    Wraps the comprehensive calculation to return just the ranking.
+    """
+    _, ranking = compute_weighted_organizational_negativity(G)
+    return ranking

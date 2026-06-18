@@ -10,7 +10,7 @@ import { interpretFrustrationIndex, interpretPositivity, interpretBalance, inter
 function generateRecommendations(metrics, graphData) {
   const recs = []
 
-  if (metrics.frustrationIndex > 0.5) {
+  if (metrics.frustration_index > 0.5) {
     const negEdges = graphData?.links?.filter((l) => l.sign === -1) || []
     recs.push({
       icon: GitBranch,
@@ -23,7 +23,7 @@ function generateRecommendations(metrics, graphData) {
     })
   }
 
-  if (metrics.organizationalPositivity !== null && metrics.organizationalPositivity < 0.4) {
+  if (metrics.organizational_positivity !== null && metrics.organizational_positivity < 0.4) {
     recs.push({
       icon: Users,
       priority: 'HIGH',
@@ -35,7 +35,7 @@ function generateRecommendations(metrics, graphData) {
     })
   }
 
-  if (metrics.organizationalBalance !== null && metrics.organizationalBalance < 0.6) {
+  if (metrics.organizational_balance !== null && metrics.organizational_balance < 0.6) {
     recs.push({
       icon: GitBranch,
       priority: 'MEDIUM',
@@ -67,16 +67,16 @@ export default function RecommendationPanel({ compact = false }) {
   const recommendations = generateRecommendations(metrics, graphData)
 
   const fiInterp = interpretationMode === 'after' && snapshotMetrics
-    ? interpretChange(snapshotMetrics.frustrationIndex, metrics.frustrationIndex, 'frustrationIndex')
-    : interpretFrustrationIndex(metrics.frustrationIndex)
+    ? interpretChange(snapshotMetrics.frustration_index, metrics.frustration_index, 'frustration_index')
+    : interpretFrustrationIndex(metrics.frustration_index)
 
   const posInterp = interpretationMode === 'after' && snapshotMetrics
-    ? interpretChange(snapshotMetrics.organizationalPositivity, metrics.organizationalPositivity, 'organizationalPositivity')
-    : interpretPositivity(metrics.organizationalPositivity)
+    ? interpretChange(snapshotMetrics.organizational_positivity, metrics.organizational_positivity, 'organizational_positivity')
+    : interpretPositivity(metrics.organizational_positivity)
 
   const balInterp = interpretationMode === 'after' && snapshotMetrics
-    ? interpretChange(snapshotMetrics.organizationalBalance, metrics.organizationalBalance, 'organizationalBalance')
-    : interpretBalance(metrics.organizationalBalance)
+    ? interpretChange(snapshotMetrics.organizational_balance, metrics.organizational_balance, 'organizational_balance')
+    : interpretBalance(metrics.organizational_balance)
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>

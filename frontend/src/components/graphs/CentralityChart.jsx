@@ -57,6 +57,7 @@ export default function CentralityChart({ metric = 'betweenness' }) {
         deptIdx: deptIndex[node.department] || 0,
         betweenness: betweennessMap[node.id] ?? (degreeMap[node.id] / Math.max(n - 1, 1)),
         degree: degCentMap[node.id] ?? (degreeMap[node.id] / Math.max(n - 1, 1)),
+        negativity: metrics?.negativity_ranking?.[node.id] ?? 0,
         rawDegree: degreeMap[node.id] || 0,
       }))
       .sort((a, b) => b[metric] - a[metric])
@@ -92,7 +93,10 @@ export default function CentralityChart({ metric = 'betweenness' }) {
           <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(79,195,247,0.05)' }} />
           <Bar 
             dataKey={metric} 
-            name={metric === 'betweenness' ? 'Betweenness Centrality' : 'Degree Centrality'} 
+            name={
+              metric === 'betweenness' ? 'Betweenness Centrality' : 
+              metric === 'degree' ? 'Degree Centrality' : 'Negativity Score'
+            } 
             radius={[3,3,0,0]}
             onClick={(data) => {
               setSelectedNode(graphData.nodes.find(n => n.id === data.name));
@@ -142,7 +146,7 @@ export default function CentralityChart({ metric = 'betweenness' }) {
             <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '0.68rem', color: 'var(--text-muted)', marginBottom: 4 }}>
               {d.department}
             </div>
-            <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.75rem', color: DEPT_COLORS[d.deptIdx % DEPT_COLORS.length] }}>
+            <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.75rem', color: metric === 'negativity' ? '#ff4757' : DEPT_COLORS[d.deptIdx % DEPT_COLORS.length] }}>
               {d[metric].toFixed(4)}
             </div>
             <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '0.65rem', color: 'var(--text-muted)', marginTop: 2 }}>
